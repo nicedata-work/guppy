@@ -151,6 +151,6 @@ func printDiff(out io.Writer, p painter, lines []string) {
 		case strings.HasPrefix(l, "-"):
 			s = red
 		}
-		fmt.Fprintln(out, p.paint(s, l))
+		_, _ = fmt.Fprintln(out, p.paint(s, l))
 	}
 }

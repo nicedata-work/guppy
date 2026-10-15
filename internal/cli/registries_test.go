@@ -30,7 +30,7 @@ func fakeRegistry(t *testing.T, entries ...registry.Entry) *httptest.Server {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/index.json" {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]any{"schema": 1, "templates": entries})
+			_ = json.NewEncoder(w).Encode(map[string]any{"schema": 1, "templates": entries})
 			return
 		}
 		http.NotFound(w, r)
@@ -163,7 +163,7 @@ func TestRegistryChainTokenFromEnv(t *testing.T) {
 	authed := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotAuth = r.Header.Get("Authorization")
 		if r.URL.Path == "/index.json" {
-			json.NewEncoder(w).Encode(map[string]any{"schema": 1, "templates": []registry.Entry{}})
+			_ = json.NewEncoder(w).Encode(map[string]any{"schema": 1, "templates": []registry.Entry{}})
 			return
 		}
 		http.NotFound(w, r)

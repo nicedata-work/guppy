@@ -219,7 +219,7 @@ func FormatMap(v VerbMap) string {
 		}
 	}
 	for _, n := range names {
-		fmt.Fprintf(&b, "  %-*s  %s\n", width, n, v[n])
+		_, _ = fmt.Fprintf(&b, "  %-*s  %s\n", width, n, v[n])
 	}
 	return b.String()
 }

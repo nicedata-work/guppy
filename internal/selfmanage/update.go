@@ -131,7 +131,7 @@ func Update(ctx context.Context, opts UpdateOptions) (UpdateResult, error) {
 		if version == "" {
 			return UpdateResult{}, fmt.Errorf("latest.txt at %s is empty", base)
 		}
-		fmt.Fprintf(progress, "latest version: %s\n", version)
+		_, _ = fmt.Fprintf(progress, "latest version: %s\n", version)
 	}
 
 	name := AssetName(version, plat)
@@ -143,7 +143,7 @@ func Update(ctx context.Context, opts UpdateOptions) (UpdateResult, error) {
 		return UpdateResult{}, fmt.Errorf("fetch checksum: %w: %w", ErrArtifact, err)
 	}
 
-	fmt.Fprintf(progress, "downloading %s\n", tarballURL)
+	_, _ = fmt.Fprintf(progress, "downloading %s\n", tarballURL)
 	tarball, err := fetchSize(ctx, client, tarballURL, capBytes)
 	if err != nil {
 		return UpdateResult{}, fmt.Errorf("download release: %w: %w", ErrArtifact, err)
@@ -162,7 +162,7 @@ func Update(ctx context.Context, opts UpdateOptions) (UpdateResult, error) {
 		}
 		return UpdateResult{}, fmt.Errorf("unpack release: %w: %w", ErrArtifact, err)
 	}
-	defer os.Remove(staged)
+	defer func() { _ = os.Remove(staged) }()
 
 	if err := ctx.Err(); err != nil {
 		return UpdateResult{}, fmt.Errorf("update interrupted (current binary untouched): %w", err)
@@ -171,7 +171,7 @@ func Update(ctx context.Context, opts UpdateOptions) (UpdateResult, error) {
 	if err := swap(current, staged); err != nil {
 		return UpdateResult{}, fmt.Errorf("swap binary: %w: %w", ErrSwap, err)
 	}
-	fmt.Fprintf(progress, "guppy %s installed at %s\n", version, current)
+	_, _ = fmt.Fprintf(progress, "guppy %s installed at %s\n", version, current)
 	return UpdateResult{Version: version, Path: current}, nil
 }
 
@@ -212,7 +212,7 @@ func stageBinary(ctx context.Context, tarball []byte, dir string, plat Platform,
 	if err != nil {
 		return "", err
 	}
-	defer gz.Close()
+	defer func() { _ = gz.Close() }()
 
 	out, err := os.CreateTemp(dir, ".guppy-new-*")
 	if err != nil {
@@ -223,47 +223,47 @@ func stageBinary(ctx context.Context, tarball []byte, dir string, plat Platform,
 	tr := tar.NewReader(gz)
 	for {
 		if err := ctx.Err(); err != nil {
-			out.Close()
-			os.Remove(name)
+			_ = out.Close()
+			_ = os.Remove(name)
 			return "", err
 		}
 		hdr, err := tr.Next()
 		if err == io.EOF {
-			out.Close()
-			os.Remove(name)
+			_ = out.Close()
+			_ = os.Remove(name)
 			return "", fmt.Errorf("tarball has no %s entry", want)
 		}
 		if err != nil {
-			out.Close()
-			os.Remove(name)
+			_ = out.Close()
+			_ = os.Remove(name)
 			return "", err
 		}
 		if hdr.Typeflag != tar.TypeReg || filepath.Base(hdr.Name) != want {
 			continue
 		}
 		if hdr.Size > capBytes {
-			out.Close()
-			os.Remove(name)
+			_ = out.Close()
+			_ = os.Remove(name)
 			return "", fmt.Errorf("tarball entry %s is %d bytes — over the %d byte cap", want, hdr.Size, capBytes)
 		}
 		n, err := io.Copy(out, tr)
 		if err != nil {
-			out.Close()
-			os.Remove(name)
+			_ = out.Close()
+			_ = os.Remove(name)
 			return "", err
 		}
 		if n > capBytes {
-			out.Close()
-			os.Remove(name)
+			_ = out.Close()
+			_ = os.Remove(name)
 			return "", fmt.Errorf("tarball entry %s is over the %d byte cap", want, capBytes)
 		}
 		if err := out.Sync(); err != nil {
-			out.Close()
-			os.Remove(name)
+			_ = out.Close()
+			_ = os.Remove(name)
 			return "", err
 		}
 		if err := out.Close(); err != nil {
-			os.Remove(name)
+			_ = os.Remove(name)
 			return "", err
 		}
 		mode := os.FileMode(0o755)
@@ -271,7 +271,7 @@ func stageBinary(ctx context.Context, tarball []byte, dir string, plat Platform,
 			mode = os.FileMode(hdr.Mode) & 0o777
 		}
 		if err := os.Chmod(name, mode); err != nil {
-			os.Remove(name)
+			_ = os.Remove(name)
 			return "", err
 		}
 		return name, nil
@@ -306,7 +306,7 @@ func fetchSize(ctx context.Context, client *http.Client, url string, cap int64) 
 	if clientErr != nil {
 		return nil, clientErr
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("GET %s: %s", url, resp.Status)
 	}

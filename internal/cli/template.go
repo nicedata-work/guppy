@@ -62,16 +62,16 @@ merged payload files verbatim.`,
 // showTemplate prints the merged view. Pure-ish: writes only to out.
 func showTemplate(out io.Writer, lt loadedTemplate, contents bool) error {
 	t := lt.t
-	fmt.Fprintf(out, "%s (%s)\n", t.Identity.String(), t.Identity.Scope)
+	_, _ = fmt.Fprintf(out, "%s (%s)\n", t.Identity.String(), t.Identity.Scope)
 
-	fmt.Fprintln(out, "chain:")
+	_, _ = fmt.Fprintln(out, "chain:")
 	for _, id := range t.Chain {
-		fmt.Fprintf(out, "  %s\n", id)
+		_, _ = fmt.Fprintf(out, "  %s\n", id)
 	}
 
-	fmt.Fprintln(out, "vars:")
+	_, _ = fmt.Fprintln(out, "vars:")
 	if len(t.Manifest.Vars) == 0 {
-		fmt.Fprintln(out, "  (none)")
+		_, _ = fmt.Fprintln(out, "  (none)")
 	}
 	for _, name := range sortedKeys(t.Manifest.Vars) {
 		v := t.Manifest.Vars[name]
@@ -82,12 +82,12 @@ func showTemplate(out io.Writer, lt loadedTemplate, contents bool) error {
 		if v.Default != "" {
 			line += fmt.Sprintf("  default=%q", v.Default)
 		}
-		fmt.Fprintln(out, line)
+		_, _ = fmt.Fprintln(out, line)
 	}
 
-	fmt.Fprintln(out, "defaults:")
+	_, _ = fmt.Fprintln(out, "defaults:")
 	if len(t.Manifest.Defaults) == 0 {
-		fmt.Fprintln(out, "  (none)")
+		_, _ = fmt.Fprintln(out, "  (none)")
 	} else {
 		axes := make([]string, 0, len(t.Manifest.Defaults))
 		for k, v := range t.Manifest.Defaults {
@@ -95,13 +95,13 @@ func showTemplate(out io.Writer, lt loadedTemplate, contents bool) error {
 		}
 		slices.Sort(axes)
 		for _, ax := range axes {
-			fmt.Fprintf(out, "  %s\n", ax)
+			_, _ = fmt.Fprintf(out, "  %s\n", ax)
 		}
 	}
 
-	fmt.Fprintln(out, "verbs:")
+	_, _ = fmt.Fprintln(out, "verbs:")
 	if len(t.Manifest.GP) == 0 {
-		fmt.Fprintln(out, "  (none)")
+		_, _ = fmt.Fprintln(out, "  (none)")
 	} else {
 		for _, verb := range sortedKeys(t.Manifest.GP) {
 			entry := t.Manifest.GP[verb]
@@ -109,7 +109,7 @@ func showTemplate(out io.Writer, lt loadedTemplate, contents bool) error {
 			if len(entry.Requires) > 0 {
 				line += fmt.Sprintf("  (requires: %s)", strings.Join(manifest.AxisNames(entry.Requires), ", "))
 			}
-			fmt.Fprintln(out, line)
+			_, _ = fmt.Fprintln(out, line)
 		}
 	}
 
@@ -117,19 +117,19 @@ func showTemplate(out io.Writer, lt loadedTemplate, contents bool) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(out, "files:")
+	_, _ = fmt.Fprintln(out, "files:")
 	for _, f := range files {
-		fmt.Fprintf(out, "  %s\n", f)
+		_, _ = fmt.Fprintf(out, "  %s\n", f)
 	}
 
 	if contents {
 		for _, f := range files {
-			fmt.Fprintf(out, "\n--- %s ---\n", f)
+			_, _ = fmt.Fprintf(out, "\n--- %s ---\n", f)
 			data, err := fs.ReadFile(t.Payload, f)
 			if err != nil {
 				return err
 			}
-			out.Write(data)
+			_, _ = out.Write(data)
 		}
 	}
 	return nil

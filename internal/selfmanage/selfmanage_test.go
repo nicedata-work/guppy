@@ -54,16 +54,16 @@ func serveRelease(t *testing.T, latest string, assets map[string][]byte) *httpte
 	mux := http.NewServeMux()
 	if latest != "" {
 		mux.HandleFunc("/latest.txt", func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprint(w, latest+"\n")
+			_, _ = fmt.Fprint(w, latest+"\n")
 		})
 	}
 	for name, body := range assets {
 		sum := sha256.Sum256(body)
 		mux.HandleFunc("/"+name, func(w http.ResponseWriter, r *http.Request) {
-			w.Write(body)
+			_, _ = w.Write(body)
 		})
 		mux.HandleFunc("/"+name+".sha256", func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintf(w, "%s  %s\n", hex.EncodeToString(sum[:]), name)
+			_, _ = fmt.Fprintf(w, "%s  %s\n", hex.EncodeToString(sum[:]), name)
 		})
 	}
 	srv := httptest.NewServer(mux)
@@ -123,7 +123,7 @@ func TestUpdatePinnedVersion(t *testing.T) {
 
 	dir := t.TempDir()
 	current := filepath.Join(dir, "guppy")
-	os.WriteFile(current, []byte("old"), 0o755)
+	_ = os.WriteFile(current, []byte("old"), 0o755)
 
 	res, err := Update(context.Background(), UpdateOptions{
 		BaseURL:     srv.URL,
@@ -146,17 +146,17 @@ func TestUpdateChecksumMismatchLeavesBinaryUntouched(t *testing.T) {
 
 	mux := http.NewServeMux()
 	name := AssetName("9.9.9", Platform{GOOS: "linux", GOARCH: "amd64"})
-	mux.HandleFunc("/latest.txt", func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, "9.9.9\n") })
-	mux.HandleFunc("/"+name, func(w http.ResponseWriter, r *http.Request) { w.Write(tarball) })
+	mux.HandleFunc("/latest.txt", func(w http.ResponseWriter, r *http.Request) { _, _ = fmt.Fprint(w, "9.9.9\n") })
+	mux.HandleFunc("/"+name, func(w http.ResponseWriter, r *http.Request) { _, _ = w.Write(tarball) })
 	mux.HandleFunc("/"+name+".sha256", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "%s  %s\n", strings.Repeat("0", 64), name)
+		_, _ = fmt.Fprintf(w, "%s  %s\n", strings.Repeat("0", 64), name)
 	})
 	srv := httptest.NewServer(mux)
 	t.Cleanup(srv.Close)
 
 	dir := t.TempDir()
 	current := filepath.Join(dir, "guppy")
-	os.WriteFile(current, []byte("trusted old binary"), 0o755)
+	_ = os.WriteFile(current, []byte("trusted old binary"), 0o755)
 
 	_, err := Update(context.Background(), UpdateOptions{
 		BaseURL: srv.URL, Client: srv.Client(),
@@ -274,7 +274,7 @@ func TestUpdateMissingAssetIsNetworkError(t *testing.T) {
 	srv := serveRelease(t, "9.9.9", nil)
 	dir := t.TempDir()
 	current := filepath.Join(dir, "guppy")
-	os.WriteFile(current, []byte("old"), 0o755)
+	_ = os.WriteFile(current, []byte("old"), 0o755)
 
 	_, err := Update(context.Background(), UpdateOptions{
 		BaseURL: srv.URL, Client: srv.Client(),
@@ -289,7 +289,7 @@ func TestSwapRestoresOnFailure(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
 	current := filepath.Join(dir, "guppy")
-	os.WriteFile(current, []byte("old"), 0o755)
+	_ = os.WriteFile(current, []byte("old"), 0o755)
 
 	staged := filepath.Join(dir, "no-such-subdir", "new")
 	if err := swap(current, staged); err == nil {
@@ -308,9 +308,9 @@ func TestUninstallRemovesBinaryAndRcBlocks(t *testing.T) {
 	t.Parallel()
 	home := t.TempDir()
 	binDir := filepath.Join(home, ".local", "bin")
-	os.MkdirAll(binDir, 0o755)
+	_ = os.MkdirAll(binDir, 0o755)
 	binary := filepath.Join(binDir, "guppy")
-	os.WriteFile(binary, []byte("bin"), 0o755)
+	_ = os.WriteFile(binary, []byte("bin"), 0o755)
 
 	rc := filepath.Join(home, ".bashrc")
 	original := strings.Join([]string{
@@ -326,15 +326,15 @@ func TestUninstallRemovesBinaryAndRcBlocks(t *testing.T) {
 	}
 
 	zshrc := filepath.Join(home, ".zshrc")
-	os.WriteFile(zshrc, []byte("# zsh config\n"), 0o644)
+	_ = os.WriteFile(zshrc, []byte("# zsh config\n"), 0o644)
 
 	layout := paths.Layout{
 		ConfigHome: filepath.Join(home, ".config"),
 		DataHome:   filepath.Join(home, ".local", "share"),
 		CacheHome:  filepath.Join(home, ".cache"),
 	}
-	os.MkdirAll(layout.DataDir(), 0o755)
-	os.WriteFile(filepath.Join(layout.DataDir(), "index.toml"), []byte("[]"), 0o644)
+	_ = os.MkdirAll(layout.DataDir(), 0o755)
+	_ = os.WriteFile(filepath.Join(layout.DataDir(), "index.toml"), []byte("[]"), 0o644)
 
 	res, err := Uninstall(context.Background(), UninstallOptions{
 		BinaryPath: binary,
@@ -377,13 +377,13 @@ func TestUninstallPurgeRemovesDataAndCache(t *testing.T) {
 		DataHome:   filepath.Join(home, ".local", "share"),
 		CacheHome:  filepath.Join(home, ".cache"),
 	}
-	os.MkdirAll(layout.DataDir(), 0o755)
-	os.MkdirAll(layout.CacheDir(), 0o755)
-	os.MkdirAll(layout.ConfigHome, 0o755)
-	os.WriteFile(filepath.Join(layout.ConfigHome, "guppy.toml"), []byte(""), 0o644)
+	_ = os.MkdirAll(layout.DataDir(), 0o755)
+	_ = os.MkdirAll(layout.CacheDir(), 0o755)
+	_ = os.MkdirAll(layout.ConfigHome, 0o755)
+	_ = os.WriteFile(filepath.Join(layout.ConfigHome, "guppy.toml"), []byte(""), 0o644)
 
 	binary := filepath.Join(home, "guppy")
-	os.WriteFile(binary, []byte("bin"), 0o755)
+	_ = os.WriteFile(binary, []byte("bin"), 0o755)
 
 	res, err := Uninstall(context.Background(), UninstallOptions{
 		BinaryPath: binary,
@@ -413,10 +413,10 @@ func TestUninstallUnterminatedMarkerIsWarning(t *testing.T) {
 	t.Parallel()
 	home := t.TempDir()
 	rc := filepath.Join(home, ".bashrc")
-	os.WriteFile(rc, []byte(MarkerOpen+"\nexport PATH=x\n"), 0o644)
+	_ = os.WriteFile(rc, []byte(MarkerOpen+"\nexport PATH=x\n"), 0o644)
 
 	binary := filepath.Join(home, "guppy")
-	os.WriteFile(binary, []byte("bin"), 0o755)
+	_ = os.WriteFile(binary, []byte("bin"), 0o755)
 
 	res, err := Uninstall(context.Background(), UninstallOptions{
 		BinaryPath: binary,
@@ -445,7 +445,7 @@ func TestUpdateRefusesOversizedAsset(t *testing.T) {
 
 	dir := t.TempDir()
 	current := filepath.Join(dir, "guppy")
-	os.WriteFile(current, []byte("trusted old binary"), 0o755)
+	_ = os.WriteFile(current, []byte("trusted old binary"), 0o755)
 
 	_, err := Update(context.Background(), UpdateOptions{
 		BaseURL: srv.URL, Client: srv.Client(),

@@ -63,7 +63,7 @@ func runInitShell(rt *runtime, out *output, shell string, install bool) error {
 	}
 	h := catalog.Hook{SeenLog: rt.layout.SeenLog()}
 	if !install {
-		fmt.Fprint(out.stdout, h.Script())
+		_, _ = fmt.Fprint(out.stdout, h.Script())
 		return nil
 	}
 	rc := rcFile(shell)

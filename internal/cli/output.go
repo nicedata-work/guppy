@@ -35,7 +35,7 @@ func (o *output) infof(format string, args ...any) {
 	if o.g.Quiet {
 		return
 	}
-	fmt.Fprintf(o.stderr, "%s  %s\n", o.stamp(), fmt.Sprintf(format, args...))
+	_, _ = fmt.Fprintf(o.stderr, "%s  %s\n", o.stamp(), fmt.Sprintf(format, args...))
 }
 
 // verbose reports whether -v was passed (diff-on-update, extra notes).

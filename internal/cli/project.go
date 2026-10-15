@@ -66,10 +66,10 @@ func runProject(ctx context.Context, rt *runtime, out *output, p *prompter, args
 	}
 
 	if len(args) == 0 || isHelpArg(args[0]) {
-		fmt.Fprintf(out.stdout, "guppy-managed project: %s (template %s@%s)\n",
+		_, _ = fmt.Fprintf(out.stdout, "guppy-managed project: %s (template %s@%s)\n",
 			root, marker.Project.Template, marker.Project.Version)
-		fmt.Fprintf(out.stdout, "verbs:\n%s", project.FormatMap(marker.GP))
-		fmt.Fprintf(out.stdout, "  doctor  audit this project (built in)\n")
+		_, _ = fmt.Fprintf(out.stdout, "verbs:\n%s", project.FormatMap(marker.GP))
+		_, _ = fmt.Fprintf(out.stdout, "  doctor  audit this project (built in)\n")
 		return nil
 	}
 

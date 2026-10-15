@@ -215,7 +215,7 @@ func runNew(ctx context.Context, rt *runtime, out *output, p *prompter, opts new
 
 	if opts.DryRun {
 		for _, f := range files.Files {
-			fmt.Fprintln(out.stdout, f.Path)
+			_, _ = fmt.Fprintln(out.stdout, f.Path)
 		}
 		out.infof("dry run: would create %d files in %s", len(files.Files), abs)
 		return nil

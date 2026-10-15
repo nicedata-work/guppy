@@ -34,11 +34,11 @@ func (a *app) installHelp(root *cobra.Command) {
 // writeHelp renders the full help page: description + usage body.
 func (o *output) writeHelp(c *cobra.Command, out io.Writer) {
 	if desc := c.Long; desc != "" {
-		fmt.Fprintln(out, strings.TrimRight(desc, "\n"))
-		fmt.Fprintln(out)
+		_, _ = fmt.Fprintln(out, strings.TrimRight(desc, "\n"))
+		_, _ = fmt.Fprintln(out)
 	} else if desc := c.Short; desc != "" {
-		fmt.Fprintln(out, desc)
-		fmt.Fprintln(out)
+		_, _ = fmt.Fprintln(out, desc)
+		_, _ = fmt.Fprintln(out)
 	}
 	o.writeUsageTo(c, out, o.outP())
 }
@@ -46,45 +46,45 @@ func (o *output) writeHelp(c *cobra.Command, out io.Writer) {
 // writeUsageTo renders cobra's usage body: usage line, aliases,
 // examples, available commands, flag blocks, subcommand footer.
 func (o *output) writeUsageTo(c *cobra.Command, out io.Writer, p painter) {
-	fmt.Fprintf(out, "%s\n", p.paint(bold, "Usage:"))
+	_, _ = fmt.Fprintf(out, "%s\n", p.paint(bold, "Usage:"))
 
 	if c.Runnable() {
-		fmt.Fprintf(out, "  %s\n", paintUseLine(c, p))
+		_, _ = fmt.Fprintf(out, "  %s\n", paintUseLine(c, p))
 	}
 	if c.HasAvailableSubCommands() {
-		fmt.Fprintf(out, "  %s [command]\n", p.paint(bold, c.CommandPath()))
+		_, _ = fmt.Fprintf(out, "  %s [command]\n", p.paint(bold, c.CommandPath()))
 	}
 
 	if len(c.Aliases) > 0 {
-		fmt.Fprintf(out, "\n%s\n  %s\n", p.paint(bold, "Aliases:"), p.paint(cyan, c.NameAndAliases()))
+		_, _ = fmt.Fprintf(out, "\n%s\n  %s\n", p.paint(bold, "Aliases:"), p.paint(cyan, c.NameAndAliases()))
 	}
 
 	if c.HasExample() {
-		fmt.Fprintf(out, "\n%s\n%s\n", p.paint(bold, "Examples:"),
+		_, _ = fmt.Fprintf(out, "\n%s\n%s\n", p.paint(bold, "Examples:"),
 			p.paint(dim, strings.TrimSpace(c.Example)))
 	}
 
 	if c.HasAvailableSubCommands() {
-		fmt.Fprintf(out, "\n%s\n", p.paint(bold, "Available Commands:"))
+		_, _ = fmt.Fprintf(out, "\n%s\n", p.paint(bold, "Available Commands:"))
 		for _, sub := range c.Commands() {
 			if !sub.IsAvailableCommand() && sub.Name() != "help" {
 				continue
 			}
-			fmt.Fprintf(out, "  %s %s\n", p.paint(cyan, padTo(sub.Name(), c.NamePadding())), sub.Short)
+			_, _ = fmt.Fprintf(out, "  %s %s\n", p.paint(cyan, padTo(sub.Name(), c.NamePadding())), sub.Short)
 		}
 	}
 
 	if c.HasAvailableLocalFlags() {
-		fmt.Fprintf(out, "\n%s\n", p.paint(bold, "Flags:"))
+		_, _ = fmt.Fprintf(out, "\n%s\n", p.paint(bold, "Flags:"))
 		writeFlagBlock(out, p, c.LocalFlags())
 	}
 	if c.HasAvailableInheritedFlags() {
-		fmt.Fprintf(out, "\n%s\n", p.paint(bold, "Global Flags:"))
+		_, _ = fmt.Fprintf(out, "\n%s\n", p.paint(bold, "Global Flags:"))
 		writeFlagBlock(out, p, c.InheritedFlags())
 	}
 
 	if c.HasAvailableSubCommands() {
-		fmt.Fprintf(out, "\n%s\n", p.paint(dim,
+		_, _ = fmt.Fprintf(out, "\n%s\n", p.paint(dim,
 			fmt.Sprintf("Use \"%s [command] --help\" for more information about a command.", c.CommandPath())))
 	}
 }
@@ -141,6 +141,6 @@ func writeFlagBlock(out io.Writer, p painter, fs *pflag.FlagSet) {
 		rows = append(rows, row{name, f.Usage, def})
 	})
 	for _, r := range rows {
-		fmt.Fprintf(out, "%s   %s%s\n", p.paint(yellow, padTo(r.name, width)), r.usage, p.paint(dim, r.def))
+		_, _ = fmt.Fprintf(out, "%s   %s%s\n", p.paint(yellow, padTo(r.name, width)), r.usage, p.paint(dim, r.def))
 	}
 }

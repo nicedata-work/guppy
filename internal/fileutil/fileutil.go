@@ -28,19 +28,19 @@ func WriteAtomic(path string, perm fs.FileMode, content []byte) error {
 		return fmt.Errorf("write %s: %w", path, err)
 	}
 	tmp := f.Name()
-	defer os.Remove(tmp)
+	defer func() { _ = os.Remove(tmp) }()
 
 	if _, err := f.Write(content); err != nil {
-		f.Close()
+		_ = f.Close()
 		return fmt.Errorf("write %s: %w", path, err)
 	}
 
 	if err := f.Sync(); err != nil {
-		f.Close()
+		_ = f.Close()
 		return fmt.Errorf("write %s: %w", path, err)
 	}
 	if err := f.Chmod(perm.Perm()); err != nil {
-		f.Close()
+		_ = f.Close()
 		return fmt.Errorf("write %s: %w", path, err)
 	}
 	if err := f.Close(); err != nil {

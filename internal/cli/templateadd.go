@@ -103,38 +103,38 @@ func runAdd(ctx context.Context, rt *runtime, out *output, p *prompter, spec tem
 // hide what the user is being asked to trust.
 func reviewCommunity(out *output, p *prompter, m manifest.Manifest, fsys fs.FS, oldDir, oldVersion, version string, yes bool) (bool, error) {
 	stderr := out.stderr
-	fmt.Fprintf(stderr, "review: %s@%s (community)\n", m.ID, version)
-	fmt.Fprintf(stderr, "  kind: %s  language: %s\n", orDash(m.Kind), orDash(m.Language))
+	_, _ = fmt.Fprintf(stderr, "review: %s@%s (community)\n", m.ID, version)
+	_, _ = fmt.Fprintf(stderr, "  kind: %s  language: %s\n", orDash(m.Kind), orDash(m.Language))
 	if m.Description != "" {
-		fmt.Fprintf(stderr, "  description: %s\n", m.Description)
+		_, _ = fmt.Fprintf(stderr, "  description: %s\n", m.Description)
 	}
 	if len(m.Extends) > 0 {
-		fmt.Fprintf(stderr, "  extends: %v\n", m.Extends)
+		_, _ = fmt.Fprintf(stderr, "  extends: %v\n", m.Extends)
 	}
 
 	files, err := listTree(fsys)
 	if err != nil {
 		return false, err
 	}
-	fmt.Fprintln(stderr, "files:")
+	_, _ = fmt.Fprintln(stderr, "files:")
 	for _, f := range files {
-		fmt.Fprintf(stderr, "  %s\n", f)
+		_, _ = fmt.Fprintf(stderr, "  %s\n", f)
 	}
 
 	if oldDir != "" {
-		fmt.Fprintf(stderr, "changes from %s@%s:\n", m.ID, oldVersion)
+		_, _ = fmt.Fprintf(stderr, "changes from %s@%s:\n", m.ID, oldVersion)
 		diffs, err := diffTrees(os.DirFS(oldDir), fsys)
 		if err != nil {
 			return false, err
 		}
 		if len(diffs) == 0 {
-			fmt.Fprintln(stderr, "  (identical content)")
+			_, _ = fmt.Fprintln(stderr, "  (identical content)")
 		}
 		printDiff(stderr, out.errP(), diffs)
 	}
 
 	if yes {
-		fmt.Fprintln(stderr, "guppy: --yes: review accepted")
+		_, _ = fmt.Fprintln(stderr, "guppy: --yes: review accepted")
 		return true, nil
 	}
 	if !p.interactive() {

@@ -31,8 +31,8 @@ func makeTarGz(t testing.TB, entries ...tarEntry) []byte {
 			}
 		}
 	}
-	tw.Close()
-	gz.Close()
+	_ = tw.Close()
+	_ = gz.Close()
 	return buf.Bytes()
 }
 
@@ -88,8 +88,8 @@ func TestReadTarGzRefusesSymlinks(t *testing.T) {
 	if err := tw.WriteHeader(&tar.Header{Name: "link", Typeflag: tar.TypeSymlink, Linkname: "/etc/passwd"}); err != nil {
 		t.Fatal(err)
 	}
-	tw.Close()
-	gz.Close()
+	_ = tw.Close()
+	_ = gz.Close()
 	if _, err := ReadTarGz(buf.Bytes()); err == nil || !strings.Contains(err.Error(), "link") {
 		t.Errorf("symlink archive: got %v, want link refusal", err)
 	}
@@ -143,8 +143,8 @@ func TestWriteRefusesSymlinkedPath(t *testing.T) {
 
 	dest2 := t.TempDir()
 	target := filepath.Join(t.TempDir(), "precious")
-	os.WriteFile(target, []byte("user data"), 0o644)
-	os.Symlink(target, filepath.Join(dest2, "f.txt"))
+	_ = os.WriteFile(target, []byte("user data"), 0o644)
+	_ = os.Symlink(target, filepath.Join(dest2, "f.txt"))
 	if err := Write([]File{{Rel: "f.txt", Mode: 0o644, Body: []byte("x")}}, dest2, 0); err == nil || !strings.Contains(err.Error(), "symlink") {
 		t.Fatalf("want symlink refusal, got %v", err)
 	}

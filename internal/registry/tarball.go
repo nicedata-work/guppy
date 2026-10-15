@@ -63,11 +63,11 @@ func (c *Client) Fetch(ctx context.Context, entry Entry) (string, error) {
 		strip = 1
 	}
 	if err := archive.Write(files, staging, strip); err != nil {
-		os.RemoveAll(staging)
+		_ = os.RemoveAll(staging)
 		return "", fmt.Errorf("extract %s@%s: %w", entry.ID, entry.Version, err)
 	}
 	if _, err := os.Stat(filepath.Join(staging, "guppy.toml")); err != nil {
-		os.RemoveAll(staging)
+		_ = os.RemoveAll(staging)
 		return "", fmt.Errorf("registry tarball for %s@%s has no guppy.toml at its root", entry.ID, entry.Version)
 	}
 	if err := os.RemoveAll(dest); err != nil {
@@ -104,7 +104,7 @@ func (c *Client) download(ctx context.Context, entry Entry) ([]byte, error) {
 	if err != nil {
 		return nil, &httpx.NetworkError{Op: "tarball fetch", Err: err}
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return nil, &httpx.NetworkError{Op: "tarball fetch",
 			Err: fmt.Errorf("%s: %s", resolved.Redacted(), resp.Status)}

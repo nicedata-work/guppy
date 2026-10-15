@@ -107,7 +107,7 @@ func runTest(ctx context.Context, rt *runtime, out *output, spec string, update 
 
 	if len(failures) > 0 {
 		for _, f := range failures {
-			fmt.Fprintln(out.stdout, tagMark(out.outP(), red, "FAIL")+" "+f)
+			_, _ = fmt.Fprintln(out.stdout, tagMark(out.outP(), red, "FAIL")+" "+f)
 		}
 		out.summary(started, len(failures), warns)
 		return Fail(fmt.Errorf("test: %d snapshot mismatches", len(failures)))

@@ -38,14 +38,14 @@ func (o *output) statusf(s style, name, format string, args ...any) {
 	if o.g.Quiet {
 		return
 	}
-	fmt.Fprintf(o.stderr, "%s  %s %s\n", o.stamp(),
+	_, _ = fmt.Fprintf(o.stderr, "%s  %s %s\n", o.stamp(),
 		tagMark(o.errP(), s, name), fmt.Sprintf(format, args...))
 }
 
 // warnf prints a stamped [WARN] line to stderr — the single warning
 // entry point, so style and shape stay uniform.
 func (o *output) warnf(format string, args ...any) {
-	fmt.Fprintf(o.stderr, "%s  %s %s\n", o.stamp(),
+	_, _ = fmt.Fprintf(o.stderr, "%s  %s %s\n", o.stamp(),
 		tagMark(o.errP(), yellow, "WARN"), fmt.Sprintf(format, args...))
 }
 
@@ -64,7 +64,7 @@ func (o *output) summary(started time.Time, errs, warns int) {
 		s = yellow
 	}
 	secs := o.clock().Sub(started).Seconds()
-	fmt.Fprintf(o.stderr, "%s  %s\n", o.stamp(), o.errP().paint(s,
+	_, _ = fmt.Fprintf(o.stderr, "%s  %s\n", o.stamp(), o.errP().paint(s,
 		fmt.Sprintf("Completed with %s, %s in %.2fs.",
 			plural(errs, "error"), plural(warns, "warning"), secs)))
 }

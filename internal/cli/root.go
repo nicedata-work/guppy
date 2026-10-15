@@ -170,10 +170,10 @@ func Execute(args []string, env EnvFunc, stdin io.Reader, stdout, stderr io.Writ
 		code = ExitInput
 	}
 	if code == ExitInterrupted {
-		fmt.Fprintf(stderr, "%s  %s interrupted\n", a.out.stamp(), tagMark(a.out.errP(), red, "FAIL"))
+		_, _ = fmt.Fprintf(stderr, "%s  %s interrupted\n", a.out.stamp(), tagMark(a.out.errP(), red, "FAIL"))
 		return code
 	}
-	fmt.Fprintf(stderr, "%s  %s %v\n", a.out.stamp(), tagMark(a.out.errP(), red, "FAIL"), err)
+	_, _ = fmt.Fprintf(stderr, "%s  %s %v\n", a.out.stamp(), tagMark(a.out.errP(), red, "FAIL"), err)
 	return code
 }
 

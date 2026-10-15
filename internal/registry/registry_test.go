@@ -38,8 +38,8 @@ func buildTarGz(t *testing.T, wrap bool, files map[string]string) []byte {
 			t.Fatal(err)
 		}
 	}
-	tw.Close()
-	gz.Close()
+	_ = tw.Close()
+	_ = gz.Close()
 	return buf.Bytes()
 }
 
@@ -65,7 +65,7 @@ func newTestRegistry(t *testing.T, entries []Entry, tarballs map[string][]byte) 
 			b.WriteString(",")
 		}
 		kws, _ := json.Marshal(e.Keywords)
-		fmt.Fprintf(&b, `{"id":%q,"version":%q,"kind":%q,"language":%q,"description":%q,"keywords":%s,"tarball":%q,"sha256":%q}`,
+		_, _ = fmt.Fprintf(&b, `{"id":%q,"version":%q,"kind":%q,"language":%q,"description":%q,"keywords":%s,"tarball":%q,"sha256":%q}`,
 			e.ID, e.Version, e.Kind, e.Language, e.Description, kws, e.Tarball, e.SHA256)
 	}
 	b.WriteString(`]}`)
@@ -73,14 +73,14 @@ func newTestRegistry(t *testing.T, entries []Entry, tarballs map[string][]byte) 
 	reg.Server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case r.URL.Path == "/"+IndexFile:
-			fmt.Fprint(w, reg.index)
+			_, _ = fmt.Fprint(w, reg.index)
 		case strings.HasPrefix(r.URL.Path, "/tarballs/"):
 			data, ok := reg.tarballs[strings.TrimPrefix(r.URL.Path, "/tarballs/")]
 			if !ok {
 				http.NotFound(w, r)
 				return
 			}
-			w.Write(data)
+			_, _ = w.Write(data)
 		default:
 			http.NotFound(w, r)
 		}

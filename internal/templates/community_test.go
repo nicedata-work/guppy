@@ -222,9 +222,9 @@ func TestGitSourcePinsAndFetches(t *testing.T) {
 	}
 	repo := t.TempDir()
 	runGit(t, repo, "init", "-q", "-b", "main")
-	os.WriteFile(filepath.Join(repo, "guppy.toml"), []byte("id = \"gitty\"\nversion = \"0.1.0\"\n"), 0o644)
-	os.MkdirAll(filepath.Join(repo, "template"), 0o755)
-	os.WriteFile(filepath.Join(repo, "template", "hello.txt"), []byte("hi\n"), 0o644)
+	_ = os.WriteFile(filepath.Join(repo, "guppy.toml"), []byte("id = \"gitty\"\nversion = \"0.1.0\"\n"), 0o644)
+	_ = os.MkdirAll(filepath.Join(repo, "template"), 0o755)
+	_ = os.WriteFile(filepath.Join(repo, "template", "hello.txt"), []byte("hi\n"), 0o644)
 	runGit(t, repo, "add", ".")
 	runGit(t, repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "init")
 
@@ -246,7 +246,7 @@ func TestGitSourcePinsAndFetches(t *testing.T) {
 		t.Errorf("fetched payload = %q, %v", data, err)
 	}
 
-	os.WriteFile(filepath.Join(repo, "template", "hello.txt"), []byte("v2\n"), 0o644)
+	_ = os.WriteFile(filepath.Join(repo, "template", "hello.txt"), []byte("v2\n"), 0o644)
 	runGit(t, repo, "add", ".")
 	runGit(t, repo, "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "v2")
 	pin2, err := src.Pin(context.Background())

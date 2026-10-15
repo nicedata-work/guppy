@@ -96,7 +96,7 @@ func refFileName(c *cobra.Command) string {
 func refPage(root, c *cobra.Command) []byte {
 	var b strings.Builder
 	path := c.CommandPath()
-	fmt.Fprintf(&b, "# %s\n\n", path)
+	_, _ = fmt.Fprintf(&b, "# %s\n\n", path)
 
 	synopsis := c.Long
 	if synopsis == "" {
@@ -108,7 +108,7 @@ func refPage(root, c *cobra.Command) []byte {
 		b.WriteString("\n")
 	}
 
-	fmt.Fprintf(&b, "\n## Usage\n\n```\n%s\n```\n", usageLine(c))
+	_, _ = fmt.Fprintf(&b, "\n## Usage\n\n```\n%s\n```\n", usageLine(c))
 
 	if c.Example != "" {
 		b.WriteString("\n## Examples\n\n```\n")
@@ -135,7 +135,7 @@ func refPage(root, c *cobra.Command) []byte {
 	if len(children) > 0 {
 		b.WriteString("\n## See also\n\n")
 		for _, sub := range children {
-			fmt.Fprintf(&b, "* [%s](%s)\t%s\n", sub.CommandPath(), refFileName(sub), sub.Short)
+			_, _ = fmt.Fprintf(&b, "* [%s](%s)\t%s\n", sub.CommandPath(), refFileName(sub), sub.Short)
 		}
 	}
 	return []byte(b.String())
@@ -181,10 +181,10 @@ func flagSection(title string, fs *pflag.FlagSet) string {
 	}
 	slices.SortStableFunc(rows, func(a, b row) int { return strings.Compare(a.name, b.name) })
 	var b strings.Builder
-	fmt.Fprintf(&b, "## %s\n\n", title)
+	_, _ = fmt.Fprintf(&b, "## %s\n\n", title)
 	b.WriteString("| Flag | Description |\n|------|-------------|\n")
 	for _, r := range rows {
-		fmt.Fprintf(&b, "| %s | %s |\n", r.name, r.usage)
+		_, _ = fmt.Fprintf(&b, "| %s | %s |\n", r.name, r.usage)
 	}
 	b.WriteString("\n")
 	return b.String()

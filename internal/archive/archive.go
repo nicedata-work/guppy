@@ -31,7 +31,7 @@ func ReadTarGz(data []byte) ([]File, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer gz.Close()
+	defer func() { _ = gz.Close() }()
 	return ReadTar(gz)
 }
 

@@ -34,12 +34,12 @@ id such as a built-in. Exit code 1 if any error-level issue is found.`,
 			lt, issues, err := rt.loadTemplate(cmd.Context(), spec)
 			if err != nil {
 
-				fmt.Fprintf(out.stderr, "%s %v\n", tagMark(out.errP(), red, "FAIL"), err)
+				_, _ = fmt.Fprintf(out.stderr, "%s %v\n", tagMark(out.errP(), red, "FAIL"), err)
 				return Fail(fmt.Errorf("lint failed"))
 			}
 			issues = append(issues, render.Lint(lt.t.Payload, lt.t.Manifest)...)
 			for _, i := range issues {
-				fmt.Fprintln(out.stderr, lintLine(out.errP(), i))
+				_, _ = fmt.Fprintln(out.stderr, lintLine(out.errP(), i))
 			}
 			var errs, warns int
 			for _, i := range issues {

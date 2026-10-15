@@ -41,19 +41,19 @@ func main() {
 	)
 	flag.Parse()
 	if *query == "" || *corpus == "" {
-		fmt.Fprintln(os.Stderr, "usage: fuzzrank -query DIR [-corpus DIR,...] [-top N] [-paths] [-v]")
+		_, _ = fmt.Fprintln(os.Stderr, "usage: fuzzrank -query DIR [-corpus DIR,...] [-top N] [-paths] [-v]")
 		os.Exit(2)
 	}
 
 	queryTokens, err := readQueryTokens(*query)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "fuzzrank: read query: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "fuzzrank: read query: %v\n", err)
 		os.Exit(1)
 	}
 
 	docs, err := readCorpus(*corpus)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "fuzzrank: read corpus: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "fuzzrank: read corpus: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -63,14 +63,14 @@ func main() {
 	}
 
 	out := bufio.NewWriter(os.Stdout)
-	defer out.Flush()
+	defer func() { _ = out.Flush() }()
 	for _, r := range ranked {
 		if *paths {
-			fmt.Fprintln(out, r.Path)
+			_, _ = fmt.Fprintln(out, r.Path)
 		} else if *verbose {
-			fmt.Fprintf(out, "%.4f\t%s\n", r.Score, r.Path)
+			_, _ = fmt.Fprintf(out, "%.4f\t%s\n", r.Score, r.Path)
 		} else {
-			fmt.Fprintf(out, "%.4f\t%s\n", r.Score, filepath.Base(r.Path))
+			_, _ = fmt.Fprintf(out, "%.4f\t%s\n", r.Score, filepath.Base(r.Path))
 		}
 	}
 }

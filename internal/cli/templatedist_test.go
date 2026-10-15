@@ -46,7 +46,7 @@ func newDistHarness(t *testing.T) *distHarness {
 	xdg.Reload()
 	t.Cleanup(func() { xdg.Reload() })
 
-	os.MkdirAll(filepath.Join(h.root, "home"), 0o755)
+	_ = os.MkdirAll(filepath.Join(h.root, "home"), 0o755)
 	h.server = httptest.NewServer(http.HandlerFunc(h.serve))
 	t.Cleanup(h.server.Close)
 	h.env = map[string]string{
@@ -64,14 +64,14 @@ func (h *distHarness) serve(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.URL.Path == "/index.json":
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]any{"schema": 1, "templates": h.entries})
+		_ = json.NewEncoder(w).Encode(map[string]any{"schema": 1, "templates": h.entries})
 	case strings.HasPrefix(r.URL.Path, "/tarballs/"):
 		data, ok := h.tarballs[strings.TrimPrefix(r.URL.Path, "/tarballs/")]
 		if !ok {
 			http.NotFound(w, r)
 			return
 		}
-		w.Write(data)
+		_, _ = w.Write(data)
 	default:
 		http.NotFound(w, r)
 	}
@@ -106,8 +106,8 @@ func buildTemplateTarball(t *testing.T, files map[string]string) []byte {
 			t.Fatal(err)
 		}
 	}
-	tw.Close()
-	gz.Close()
+	_ = tw.Close()
+	_ = gz.Close()
 	return buf.Bytes()
 }
 
@@ -327,9 +327,9 @@ func TestTemplateAddChecksumMismatchIsNetworkError(t *testing.T) {
 func TestTemplateAddLocalPath(t *testing.T) {
 	h := newDistHarness(t)
 	src := filepath.Join(h.root, "local-template")
-	os.MkdirAll(filepath.Join(src, "template"), 0o755)
-	os.WriteFile(filepath.Join(src, "guppy.toml"), []byte(manifestFor("localish", "0.3.0", "")), 0o644)
-	os.WriteFile(filepath.Join(src, "template", "x.txt"), []byte("x\n"), 0o644)
+	_ = os.MkdirAll(filepath.Join(src, "template"), 0o755)
+	_ = os.WriteFile(filepath.Join(src, "guppy.toml"), []byte(manifestFor("localish", "0.3.0", "")), 0o644)
+	_ = os.WriteFile(filepath.Join(src, "template", "x.txt"), []byte("x\n"), 0o644)
 
 	code, _, stderr := run([]string{"template", "add", src}, h.env)
 	if code != ExitOK {

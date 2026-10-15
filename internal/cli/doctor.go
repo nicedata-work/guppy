@@ -106,7 +106,7 @@ func runDoctorAt(ctx context.Context, rt *runtime, out *output, root string, m p
 			return Fail(ferr)
 		}
 		for _, p := range fixed {
-			fmt.Fprintf(out.stdout, "%s fixed %s (restored)\n", tagMark(out.outP(), green, "OK"), p)
+			_, _ = fmt.Fprintf(out.stdout, "%s fixed %s (restored)\n", tagMark(out.outP(), green, "OK"), p)
 		}
 
 		if rep, err = opts.Audit(ctx); err != nil {
@@ -133,7 +133,7 @@ func runDoctorAll(ctx context.Context, rt *runtime, out *output, fix bool) error
 		return Fail(err)
 	}
 	if len(entries) == 0 {
-		fmt.Fprintln(out.stdout, "no guppy-managed projects found (scaffold one with \"guppy new\")")
+		_, _ = fmt.Fprintln(out.stdout, "no guppy-managed projects found (scaffold one with \"guppy new\")")
 		return nil
 	}
 
@@ -143,7 +143,7 @@ func runDoctorAll(ctx context.Context, rt *runtime, out *output, fix bool) error
 		m, err := readMarker(e.Path)
 		if err != nil {
 
-			fmt.Fprintf(out.stderr, "%s %s: %v\n", tagMark(out.errP(), red, "FAIL"), e.Path, err)
+			_, _ = fmt.Fprintf(out.stderr, "%s %s: %v\n", tagMark(out.errP(), red, "FAIL"), e.Path, err)
 			drifted++
 			errs++
 			continue
@@ -162,9 +162,9 @@ func runDoctorAll(ctx context.Context, rt *runtime, out *output, fix bool) error
 			}
 		}
 		if len(rep.Diffs) == 0 {
-			fmt.Fprintf(out.stdout, "%s %s (%s)\n", tagMark(out.outP(), green, "OK"), rep.Root, rep.Template)
+			_, _ = fmt.Fprintf(out.stdout, "%s %s (%s)\n", tagMark(out.outP(), green, "OK"), rep.Root, rep.Template)
 			for _, n := range rep.Notes {
-				fmt.Fprintf(out.stdout, "  %s %s\n", tagMark(out.outP(), dim, "NOTE"), n)
+				_, _ = fmt.Fprintf(out.stdout, "  %s %s\n", tagMark(out.outP(), dim, "NOTE"), n)
 				warns++
 			}
 			continue
@@ -196,19 +196,19 @@ func readMarker(projectDir string) (project.Marker, error) {
 // missing is restorable drift (red, [FAIL]), modified is a user edit
 // (yellow, [WARN], never touched), notes are advisory (dim, [NOTE]).
 func printReport(out io.Writer, rep doctor.Report, p painter) {
-	fmt.Fprintf(out, "%s (template %s)\n", rep.Root, rep.Template)
+	_, _ = fmt.Fprintf(out, "%s (template %s)\n", rep.Root, rep.Template)
 	for _, d := range rep.Diffs {
-		fmt.Fprintf(out, "  %s %s %s\n", tagMark(p, findingStyle(d.Kind), findingTag(d.Kind)),
+		_, _ = fmt.Fprintf(out, "  %s %s %s\n", tagMark(p, findingStyle(d.Kind), findingTag(d.Kind)),
 			padTo(findingLabel(d.Kind), 10), d.Path)
 	}
 	if len(rep.Diffs) == 0 {
-		fmt.Fprintf(out, "  %s clean — matches the template exactly\n", tagMark(p, green, "OK"))
+		_, _ = fmt.Fprintf(out, "  %s clean — matches the template exactly\n", tagMark(p, green, "OK"))
 	}
 	for _, n := range rep.Notes {
-		fmt.Fprintf(out, "  %s %s\n", tagMark(p, dim, "NOTE"), n)
+		_, _ = fmt.Fprintf(out, "  %s %s\n", tagMark(p, dim, "NOTE"), n)
 	}
 	if fixable := len(rep.Fixable()); fixable > 0 {
-		fmt.Fprintf(out, "  %d missing file(s) can be restored with \"guppy doctor --fix\"\n", fixable)
+		_, _ = fmt.Fprintf(out, "  %d missing file(s) can be restored with \"guppy doctor --fix\"\n", fixable)
 	}
 }
 

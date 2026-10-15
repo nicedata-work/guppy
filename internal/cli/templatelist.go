@@ -135,7 +135,7 @@ review-gated).`,
 				return err
 			}
 			if len(hits) == 0 {
-				fmt.Fprintf(out.stdout, "no templates match %q\n", query)
+				_, _ = fmt.Fprintf(out.stdout, "no templates match %q\n", query)
 				return nil
 			}
 			w := newTable(out.stdout, "ID", "VERSION", "KIND", "LANG", "DESCRIPTION").styled(out.outP())
@@ -147,7 +147,7 @@ review-gated).`,
 				w.row(id, h.Version, orDash(h.Kind), orDash(h.Language), orDash(h.Description))
 			}
 			w.flush()
-			fmt.Fprintf(out.stdout, "\ninstall: guppy template add <id>  ·  guppy template add community:<id> (review-gated)\n")
+			_, _ = fmt.Fprintf(out.stdout, "\ninstall: guppy template add <id>  ·  guppy template add community:<id> (review-gated)\n")
 			return nil
 		},
 	}
@@ -203,15 +203,15 @@ func (t *table) flush() {
 func (t *table) printRow(cells []string) {
 	for i, c := range cells {
 		if i > 0 {
-			fmt.Fprint(t.out, "  ")
+			_, _ = fmt.Fprint(t.out, "  ")
 		}
 		if i == len(cells)-1 {
-			fmt.Fprint(t.out, c)
+			_, _ = fmt.Fprint(t.out, c)
 		} else {
-			fmt.Fprint(t.out, padTo(c, t.widths[i]))
+			_, _ = fmt.Fprint(t.out, padTo(c, t.widths[i]))
 		}
 	}
-	fmt.Fprintln(t.out)
+	_, _ = fmt.Fprintln(t.out)
 }
 
 func upperAll(cols []string) []string {

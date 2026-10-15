@@ -111,7 +111,7 @@ func (c *Client) Index(ctx context.Context) (Index, error) {
 	if err != nil {
 		return Index{}, &httpx.NetworkError{Op: "registry index", Err: err}
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return Index{}, &httpx.NetworkError{Op: "registry index",
 			Err: fmt.Errorf("%s: %s", u.Redacted(), resp.Status)}

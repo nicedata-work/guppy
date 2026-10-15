@@ -72,9 +72,9 @@ func TestTrustedIsPerVersion(t *testing.T) {
 
 func TestInstallTreeAtomicAndRefusesExisting(t *testing.T) {
 	src := t.TempDir()
-	os.WriteFile(filepath.Join(src, "guppy.toml"), []byte("id = \"x\"\n"), 0o644)
-	os.MkdirAll(filepath.Join(src, "bin"), 0o755)
-	os.WriteFile(filepath.Join(src, "bin", "tool.sh"), []byte("#!/bin/sh\n"), 0o755)
+	_ = os.WriteFile(filepath.Join(src, "guppy.toml"), []byte("id = \"x\"\n"), 0o644)
+	_ = os.MkdirAll(filepath.Join(src, "bin"), 0o755)
+	_ = os.WriteFile(filepath.Join(src, "bin", "tool.sh"), []byte("#!/bin/sh\n"), 0o755)
 
 	dest := filepath.Join(t.TempDir(), "installed")
 	if err := InstallTree(os.DirFS(src), dest, InstallOptions{}); err != nil {

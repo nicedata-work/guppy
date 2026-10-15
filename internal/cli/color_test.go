@@ -72,7 +72,7 @@ func TestNoColorEnvDisablesAutoColor(t *testing.T) {
 	if err != nil {
 		t.Skipf("no %s: %v", os.DevNull, err)
 	}
-	defer devnull.Close()
+	defer func() { _ = devnull.Close() }()
 	info, err := devnull.Stat()
 	if err != nil || info.Mode()&os.ModeCharDevice == 0 {
 		t.Skipf("%s is not a character device here", os.DevNull)

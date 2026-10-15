@@ -47,7 +47,7 @@ func runListProjects(rt *runtime, out *output) error {
 		return Fail(err)
 	}
 	if len(entries) == 0 {
-		fmt.Fprintln(out.stdout, "no guppy-managed projects found (scaffold one with \"guppy new\")")
+		_, _ = fmt.Fprintln(out.stdout, "no guppy-managed projects found (scaffold one with \"guppy new\")")
 		return nil
 	}
 

@@ -87,9 +87,9 @@ func TestReadCorpusAndQueryTokens(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(corpus, "FuzzX"), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	os.WriteFile(filepath.Join(corpus, "FuzzX", "aa"), []byte("go test fuzz v1\n"), 0o644)
-	os.WriteFile(filepath.Join(corpus, "FuzzX", "bb"), []byte("go test fuzz v1\nstring(\"x\")\n"), 0o644)
-	os.WriteFile(filepath.Join(corpus, "empty"), nil, 0o644)
+	_ = os.WriteFile(filepath.Join(corpus, "FuzzX", "aa"), []byte("go test fuzz v1\n"), 0o644)
+	_ = os.WriteFile(filepath.Join(corpus, "FuzzX", "bb"), []byte("go test fuzz v1\nstring(\"x\")\n"), 0o644)
+	_ = os.WriteFile(filepath.Join(corpus, "empty"), nil, 0o644)
 
 	docs, err := readCorpus(corpus)
 	if err != nil {
@@ -100,8 +100,8 @@ func TestReadCorpusAndQueryTokens(t *testing.T) {
 	}
 
 	pkg := t.TempDir()
-	os.WriteFile(filepath.Join(pkg, "parse.go"), []byte("func parseTemplate() {}"), 0o644)
-	os.WriteFile(filepath.Join(pkg, "notes.md"), []byte("ignored"), 0o644)
+	_ = os.WriteFile(filepath.Join(pkg, "parse.go"), []byte("func parseTemplate() {}"), 0o644)
+	_ = os.WriteFile(filepath.Join(pkg, "notes.md"), []byte("ignored"), 0o644)
 	tokens, err := readQueryTokens(pkg)
 	if err != nil {
 		t.Fatal(err)

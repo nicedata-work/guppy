@@ -42,7 +42,7 @@ func devTTYProbe() bool {
 	if err != nil {
 		return false
 	}
-	tty.Close()
+	_ = tty.Close()
 	return true
 }
 
@@ -69,9 +69,9 @@ func (p *prompter) prompt(question, def string) (string, error) {
 		return "", fmt.Errorf("non-interactive context: pass --var to set values")
 	}
 	if def != "" {
-		fmt.Fprintf(p.stderr, "%s [%s]: ", question, def)
+		_, _ = fmt.Fprintf(p.stderr, "%s [%s]: ", question, def)
 	} else {
-		fmt.Fprintf(p.stderr, "%s: ", question)
+		_, _ = fmt.Fprintf(p.stderr, "%s: ", question)
 	}
 	line, err := p.readLine()
 	if err != nil {
@@ -93,7 +93,7 @@ func (p *prompter) confirm(question string) (bool, error) {
 	if !p.interactive() {
 		return false, fmt.Errorf("non-interactive context: pass --yes to confirm")
 	}
-	fmt.Fprintf(p.stderr, "%s [y/N] ", question)
+	_, _ = fmt.Fprintf(p.stderr, "%s [y/N] ", question)
 	line, err := p.readLine()
 	if err != nil {
 		return false, fmt.Errorf("read confirmation: %w", err)

@@ -38,7 +38,7 @@ func InstallTree(src fs.FS, dest string, opts InstallOptions) error {
 		return err
 	}
 	if err := copyFS(src, staging); err != nil {
-		os.RemoveAll(staging)
+		_ = os.RemoveAll(staging)
 		return fmt.Errorf("install into %s: %w", dest, err)
 	}
 	if err := os.RemoveAll(dest); err != nil {
