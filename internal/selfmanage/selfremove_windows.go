@@ -39,7 +39,7 @@ func RemoveRunningBinary(path string) error {
 	}
 	cmd := exec.Command("cmd", "/C", script)
 	cmd.SysProcAttr = &syscall.SysProcAttr{
-		HideWindow:    true,
+		HideWindow: true,
 		// DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP — no console
 		// window, and the cleanup survives guppy's own exit.
 		CreationFlags: 0x00000008 | 0x00000200,
