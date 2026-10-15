@@ -4,6 +4,8 @@ go_library(
     name = "selfmanage",
     srcs = [
         "platform.go",
+        "selfremove_other.go",
+        "selfremove_windows.go",
         "uninstall.go",
         "update.go",
     ],

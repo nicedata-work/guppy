@@ -93,7 +93,7 @@ func Uninstall(_ context.Context, opts UninstallOptions) (UninstallResult, error
 		}
 	}
 
-	if err := os.Remove(binary); err != nil && !os.IsNotExist(err) {
+	if err := RemoveRunningBinary(binary); err != nil && !os.IsNotExist(err) {
 		return res, fmt.Errorf("remove %s: %w", binary, err)
 	}
 	res.BinaryPath = binary
@@ -176,7 +176,7 @@ func removeMarkedRange(path, open, close string) (bool, error) {
 		if i >= start && i <= end {
 			continue
 		}
-		w.WriteString(line)
+		_, _ = w.WriteString(line)
 	}
 	if err := w.Flush(); err != nil {
 		return false, err
