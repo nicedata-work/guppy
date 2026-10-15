@@ -23,8 +23,7 @@ func Overlay(layers []fs.FS) fs.FS {
 type overlay struct{ layers []fs.FS }
 
 func (o overlay) Open(name string) (fs.File, error) {
-	for i := len(o.layers) - 1; i >= 0; i-- {
-		layer := o.layers[i]
+	for _, layer := range slices.Backward(o.layers) {
 		if shadowedSubtree(layer, name) {
 
 			break
@@ -43,8 +42,7 @@ func (o overlay) Open(name string) (fs.File, error) {
 // Stat implements fs.StatFS with the same shadowing contract as Open
 // (D8: walkers and stat-based filtering rely on it).
 func (o overlay) Stat(name string) (fs.FileInfo, error) {
-	for i := len(o.layers) - 1; i >= 0; i-- {
-		layer := o.layers[i]
+	for _, layer := range slices.Backward(o.layers) {
 		if shadowedSubtree(layer, name) {
 			break
 		}
@@ -69,8 +67,8 @@ func (o overlay) ReadDir(name string) ([]fs.DirEntry, error) {
 		seen  = map[string]bool{}
 		found bool
 	)
-	for i := len(o.layers) - 1; i >= 0; i-- {
-		layer := o.layers[i]
+	for _, layer := range slices.Backward(o.layers) {
+
 		st, serr := fs.Stat(layer, name)
 		if serr == nil {
 			found = true
