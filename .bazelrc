@@ -1,0 +1,17 @@
+# guppy — Bazel configuration.
+#
+# Bzlmod is the only extension mechanism (no WORKSPACE). Go deps are
+# resolved from go.mod/go.sum via gazelle's go_deps extension (see
+# MODULE.bazel); the Go SDK is downloaded hermetically.
+
+common --registry=https://bcr.bazel.build
+
+# Strict, hermetic actions: no shell-inherited PATH/LD_LIBRARY_PATH.
+build --incompatible_strict_action_env
+
+build --workspace_status_command=scripts/build-info.sh
+
+test --test_output=errors
+
+# Local overrides go in .bazelrc.local (gitignored).
+try-import %workspace%/.bazelrc.local

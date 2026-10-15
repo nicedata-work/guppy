@@ -1,0 +1,25 @@
+# {{ .name }}
+
+A Go CLI scaffolded by [guppy](https://nicedata.work/guppy) from the
+`go-cli` template (extends `base-toolchain`).
+{{ if .bazel }}
+The dev environment is hermetic (Bazel + direnv, design §3.4):
+
+```sh
+direnv allow . # once per checkout — gp appears in .direnv/bin/ on cd
+gp build         # bazel build //...
+gp test          # bazel test //...
+{{ if .linters }}gp lint          # bazel run //:gazelle -- -mode=diff (BUILD drift check)
+{{ end }}```
+
+No direnv? The same verbs work explicitly: `guppy project test`.
+
+(A C compiler — gcc or clang — is the one system dependency rules_go's
+cgo runtime needs; every versioned tool is pinned.)
+{{ end }}
+Or run the entrypoint directly:
+
+```sh
+go build -o {{ .name | kebab }} .
+./{{ .name | kebab }} --greeting hi
+```

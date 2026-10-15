@@ -1,0 +1,9 @@
+{{ if .bazel }}# Workspace for {{ .name }} — scaffolded by guppy (base-toolchain).
+# Language templates that extend base-toolchain override this file to add
+# toolchain declarations (rules_go, node, …); the environment contract
+# lives in MODULE.bazel + the version pins (design §3.4).
+module(
+    name = "{{ .name | kebab }}",
+    version = "0.1.0",
+)
+{{ end }}

@@ -1,0 +1,93 @@
+name: Release
+
+# Tagged-release engineering: a `v*` tag builds the
+# full platform matrix, checksum-verifies every cell, runs the installer
+# smoke tests, and attaches the artifacts (tarball + detached sha256 per
+# cell + installers) to the GitHub release (uv model). The release assets
+# are the canonical source `guppy update` and the installers fetch by
+# default; nicedata.work may mirror them for the installer front page.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build-matrix:
+    name: Build the full release matrix
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Derive version from tag
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+      - name: Build every cell
+        run: ./scripts/release.sh --matrix "$VERSION"
+      - name: Verify assets + checksums
+        run: |
+          set -euo pipefail
+          for cell in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
+            os="${cell%/*}"; arch="${cell#*/}"
+            asset="dist/guppy-$VERSION-$os-$arch.tar.gz"
+            test -f "$asset" && test -f "$asset.sha256"
+            (cd dist && sha256sum -c "$(basename "$asset").sha256")
+          done
+          test "$(cat dist/latest.txt)" = "$VERSION"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-dist
+          path: dist/
+
+  installer-smoke:
+    name: Installer smoke (linux container)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - run: ./scripts/smoke-install.sh
+
+  installer-smoke-macos:
+    name: Installer smoke (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - run: ./scripts/smoke-install.sh
+
+  installer-smoke-windows:
+    name: Installer smoke (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - shell: pwsh
+        run: ./scripts/smoke-install.ps1
+
+  publish:
+    name: Attach artifacts to the release
+    needs: [build-matrix, installer-smoke, installer-smoke-macos, installer-smoke-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-dist
+          path: dist
+      - name: Create release with assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "$GITHUB_REF_NAME" \
+            --title "guppy $GITHUB_REF_NAME" \
+            --generate-notes \
+            dist/*

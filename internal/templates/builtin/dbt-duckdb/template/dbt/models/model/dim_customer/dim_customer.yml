@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: dim_customer
+    description: Placeholder customer dimension — one row per customer.
+    columns:
+      - name: customer_id
+        data_type: varchar
+        description: Primary key of the dimension
+        data_tests:
+          - unique
+          - not_null
+      - name: customer_name
+        data_type: varchar
+        description: Display name of the customer
+      - name: segment
+        data_type: varchar
+        description: Commercial segment of the customer

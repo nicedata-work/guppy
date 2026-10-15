@@ -1,0 +1,146 @@
+// Coloured help rendering (ADR 0009 update). Cobra's default help is
+// plain text; this replaces the help/usage funcs with a painter-driven
+// renderer covering every section: usage line, aliases, examples,
+// available commands, and flag blocks. Same layout as cobra's default,
+// same decoration contract as the rest of the CLI — colours vanish
+// under --color never / NO_COLOR / non-TTY, so piping help stays
+// byte-stable.
+package cli
+
+import (
+	"fmt"
+	"io"
+	"strings"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+)
+
+// installHelp wires the coloured renderers onto the root command; the
+// funcs are inherited by every subcommand.
+func (a *app) installHelp(root *cobra.Command) {
+	root.SetHelpFunc(func(c *cobra.Command, _ []string) {
+
+		_ = a.applyFlagEnv(c.Root().PersistentFlags())
+		a.out.writeHelp(c, c.OutOrStdout())
+	})
+	root.SetUsageFunc(func(c *cobra.Command) error {
+		_ = a.applyFlagEnv(c.Root().PersistentFlags())
+		a.out.writeUsageTo(c, c.OutOrStderr(), a.out.errP())
+		return nil
+	})
+}
+
+// writeHelp renders the full help page: description + usage body.
+func (o *output) writeHelp(c *cobra.Command, out io.Writer) {
+	if desc := c.Long; desc != "" {
+		fmt.Fprintln(out, strings.TrimRight(desc, "\n"))
+		fmt.Fprintln(out)
+	} else if desc := c.Short; desc != "" {
+		fmt.Fprintln(out, desc)
+		fmt.Fprintln(out)
+	}
+	o.writeUsageTo(c, out, o.outP())
+}
+
+// writeUsageTo renders cobra's usage body: usage line, aliases,
+// examples, available commands, flag blocks, subcommand footer.
+func (o *output) writeUsageTo(c *cobra.Command, out io.Writer, p painter) {
+	fmt.Fprintf(out, "%s\n", p.paint(bold, "Usage:"))
+
+	if c.Runnable() {
+		fmt.Fprintf(out, "  %s\n", paintUseLine(c, p))
+	}
+	if c.HasAvailableSubCommands() {
+		fmt.Fprintf(out, "  %s [command]\n", p.paint(bold, c.CommandPath()))
+	}
+
+	if len(c.Aliases) > 0 {
+		fmt.Fprintf(out, "\n%s\n  %s\n", p.paint(bold, "Aliases:"), p.paint(cyan, c.NameAndAliases()))
+	}
+
+	if c.HasExample() {
+		fmt.Fprintf(out, "\n%s\n%s\n", p.paint(bold, "Examples:"),
+			p.paint(dim, strings.TrimSpace(c.Example)))
+	}
+
+	if c.HasAvailableSubCommands() {
+		fmt.Fprintf(out, "\n%s\n", p.paint(bold, "Available Commands:"))
+		for _, sub := range c.Commands() {
+			if !sub.IsAvailableCommand() && sub.Name() != "help" {
+				continue
+			}
+			fmt.Fprintf(out, "  %s %s\n", p.paint(cyan, padTo(sub.Name(), c.NamePadding())), sub.Short)
+		}
+	}
+
+	if c.HasAvailableLocalFlags() {
+		fmt.Fprintf(out, "\n%s\n", p.paint(bold, "Flags:"))
+		writeFlagBlock(out, p, c.LocalFlags())
+	}
+	if c.HasAvailableInheritedFlags() {
+		fmt.Fprintf(out, "\n%s\n", p.paint(bold, "Global Flags:"))
+		writeFlagBlock(out, p, c.InheritedFlags())
+	}
+
+	if c.HasAvailableSubCommands() {
+		fmt.Fprintf(out, "\n%s\n", p.paint(dim,
+			fmt.Sprintf("Use \"%s [command] --help\" for more information about a command.", c.CommandPath())))
+	}
+}
+
+// paintUseLine renders the usage line: command-path words bold, place-
+// holder tokens ([flags], [PATH], <id>…) dim, everything else plain.
+func paintUseLine(c *cobra.Command, p painter) string {
+	parts := strings.Fields(c.UseLine())
+	pathLen := len(strings.Fields(c.CommandPath()))
+	out := make([]string, 0, len(parts))
+	for i, part := range parts {
+		switch {
+		case i < pathLen:
+			out = append(out, p.paint(bold, part))
+		case strings.HasPrefix(part, "[") || strings.HasPrefix(part, "<") ||
+			strings.HasPrefix(part, "||"):
+			out = append(out, p.paint(dim, part))
+		default:
+			out = append(out, part)
+		}
+	}
+	return strings.Join(out, " ")
+}
+
+// writeFlagBlock renders one pflag set aligned like pflag's own
+// FlagUsages: flag names yellow, value types and defaults dim.
+func writeFlagBlock(out io.Writer, p painter, fs *pflag.FlagSet) {
+	type row struct{ name, usage, def string }
+	var rows []row
+	width := 0
+	fs.VisitAll(func(f *pflag.Flag) {
+		if f.Hidden {
+			return
+		}
+		name := "      --" + f.Name
+		if f.Shorthand != "" {
+			name = "  -" + f.Shorthand + ", --" + f.Name
+		}
+		typ := f.Value.Type()
+		if typ != "bool" {
+			name += " " + typ
+		}
+		def := ""
+		if f.DefValue != "" && f.DefValue != "false" && f.DefValue != "0" && typ != "bool" {
+			if f.Value.Type() == "string" {
+				def = fmt.Sprintf(" (default %q)", f.DefValue)
+			} else {
+				def = " (default " + f.DefValue + ")"
+			}
+		}
+		if len(name) > width {
+			width = len(name)
+		}
+		rows = append(rows, row{name, f.Usage, def})
+	})
+	for _, r := range rows {
+		fmt.Fprintf(out, "%s   %s%s\n", p.paint(yellow, padTo(r.name, width)), r.usage, p.paint(dim, r.def))
+	}
+}

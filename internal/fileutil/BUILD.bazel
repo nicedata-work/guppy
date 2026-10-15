@@ -1,0 +1,14 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "fileutil",
+    srcs = ["fileutil.go"],
+    importpath = "github.com/nicedata-work/guppy/internal/fileutil",
+    visibility = ["//:__subpackages__"],
+)
+
+go_test(
+    name = "fileutil_test",
+    srcs = ["fileutil_test.go"],
+    embed = [":fileutil"],
+)

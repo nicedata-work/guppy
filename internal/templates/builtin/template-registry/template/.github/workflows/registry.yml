@@ -1,0 +1,55 @@
+name: Registry
+
+# Validates every template on PRs; rebuilds index.json + tarballs/ on
+# merge so this repo's checkout is always a complete, current registry
+# (that checkout is what consumers' [[template.registries]] points at).
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write # the publish job commits the rebuilt registry
+
+env:
+  # Pin the guppy version CI standardizes on. Empty tracks the latest
+  # release; bump deliberately when a registry feature requires it.
+  GUPPY_VERSION: "v0.1.0"
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request'
+    name: Validate templates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install guppy
+        run: |
+          curl -LsSf https://nicedata.work/guppy/install.sh \
+            | sh -s -- --install-dir "$HOME/.local/bin" --no-modify-path \
+                       ${GUPPY_VERSION:+--version "$GUPPY_VERSION"}
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Lint + snapshot-test every template
+        run: bash scripts/validate-templates.sh
+      - name: Registry build is up to date
+        run: python3 scripts/build-registry.py --check
+
+  publish:
+    if: github.event_name == 'push'
+    name: Rebuild the registry
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Rebuild index.json + tarballs/
+        run: python3 scripts/build-registry.py
+      - name: Commit the rebuilt registry
+        run: |
+          if [ -z "$(git status --porcelain index.json tarballs)" ]; then
+            echo "registry already up to date"; exit 0
+          fi
+          git config user.name "guppy-registry-bot"
+          git config user.email "noreply@github.com"
+          git add index.json tarballs
+          git commit -q -m "registry: rebuild from templates/ [skip ci]"
+          git push

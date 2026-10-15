@@ -1,0 +1,31 @@
+# guppy project marker — the presence of this file defines a
+# guppy-managed project (design §9). Written by `guppy new`; commit it.
+#
+# Dogfooding: the guppy repo itself defines its own gp verbs, on the
+# same Bazel + direnv contract templates ship.
+schema = 2
+
+[guppy]
+version = "dev"
+
+[project]
+template = "go-cli"
+version = "0.2.0"
+chain = ["base-toolchain@0.2.0", "go-cli@0.2.0"]
+
+[vars]
+name = "guppy"
+module_path = "github.com/nicedata-work/guppy"
+
+[toggles]
+git = true
+bazel = true
+direnv = true
+agents_md = true
+linters = true
+tests = true
+
+[gp]
+build = "bazel build //..."
+test = "bazel test //..."
+lint = "bazel run //:gazelle -- -mode=diff"

@@ -1,0 +1,49 @@
+# {{ .name }}
+
+A dbt 2.0 project on DuckDB scaffolded by [guppy](https://nicedata.work/guppy)
+from the `dbt-duckdb` template (extends `base-toolchain`).
+
+The dev environment is hermetic({{ if .bazel }}Bazel-pinned, {{ end }}direnv-activated — design §3.4):
+run `direnv allow .` once, then use the project verbs:
+
+```sh
+gp dbt build     # dbt build — models → tests (via //dbt:dbt; sets DBT_DUCKDB_PATH)
+gp dbt test      # dbt data/singular tests only; extra dbt args pass through
+gp test          # bazel test //... — hermetic dbt smoke test
+gp lint          # sqlfluff over dbt/ + ruff over Python
+gp format        # ruff format
+```
+
+No direnv? The same verbs work explicitly: `guppy project dbt build`.
+The `dbt` verb needs `DBT_DUCKDB_PATH` (absolute path to the local
+database) — it is exported by `tools/env/dbt.sh` under direnv and set
+inline by the verb; raw `bazel run //dbt:dbt` needs it exported by hand.
+
+## Layout
+
+```text
+dbt/
+├── dbt_project.yml    # +schema mapping: model / expose / semantic
+├── profiles.yml       # local duckdb profile; path from DBT_DUCKDB_PATH
+├── macros/            # generate_schema_name: custom schemas land unprefixed
+├── models/
+│   ├── model/         # core models      → schema `model`
+│   ├── expose/        # analysis-ready   → schema `expose`
+│   └── semantic/      # governed views   → schema `semantic`
+└── tests/             # singular tests
+```
+
+The scaffolded models are placeholders — replace their logic, keep the
+layering: `expose` joins the model layer into analysis-ready relations,
+`semantic` curates what consumers see.
+
+## Toolchain
+
+Python deps (dbt 2.0, sqlfluff, ruff) are declared in `pyproject.toml` and
+pinned in `requirements_lock.txt`, which MODULE.bazel feeds to the pip hub —
+dbt 2.0 is a Rust engine shipped as a Python wheel, fetched per host platform
+at Bazel fetch time. To bump dependencies:
+
+```sh
+gp lock         # uv pip compile --python-version 3.14 pyproject.toml -o requirements_lock.txt
+```

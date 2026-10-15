@@ -1,0 +1,12 @@
+load("@gazelle//:def.bzl", "gazelle")
+load("@rules_go//go:def.bzl", "go_library")
+
+# gazelle:prefix github.com/nicedata-work/guppy
+gazelle(name = "gazelle")
+
+go_library(
+    name = "guppy_lib",
+    srcs = ["doc.go"],
+    importpath = "github.com/nicedata-work/guppy",
+    visibility = ["//visibility:private"],
+)

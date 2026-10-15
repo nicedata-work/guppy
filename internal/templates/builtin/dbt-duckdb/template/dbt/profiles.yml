@@ -1,0 +1,15 @@
+# Local DuckDB profile — verbatim payload (not a .hbs file): dbt's own
+# Jinja (env_var below) collides with the guppy renderer's double-brace
+# syntax, and the profile name is the fixed "local", so no substitution is
+# needed. The database path comes from DBT_DUCKDB_PATH, exported by
+# tools/env/dbt.sh and the `gp dbt` verb: the dbt 2.0 engine resolves
+# relative paths against its own binary location under `bazel run`, so an
+# absolute path is required.
+local:
+  target: local
+
+  outputs:
+    local:
+      type: duckdb
+      path: "{{ env_var('DBT_DUCKDB_PATH') }}"
+      threads: 4

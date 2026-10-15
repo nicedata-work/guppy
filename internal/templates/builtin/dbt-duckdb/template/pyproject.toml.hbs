@@ -1,0 +1,11 @@
+[project]
+name = "{{ .name | kebab }}"
+version = "0.1.0"
+description = "{{ .name }} — dbt 2.0 project on DuckDB, scaffolded by guppy"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "dbt>=2.0,<3",
+    "sqlfluff>=4.4",
+    "ruff>=0.17",
+]

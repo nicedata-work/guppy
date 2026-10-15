@@ -1,0 +1,49 @@
+[[file]]
+  path = ".bazelversion"
+  mode = "0644"
+  content = "9.3.0\n\n"
+
+[[file]]
+  path = ".envrc"
+  mode = "0644"
+  content = "# direnv wiring for example-name — the guppy environment contract\n# (design §3.4): pinned toolchains via Bazel, project-scoped shims in\n# .direnv/bin/, nothing on the global PATH. Activate with:\n#\n#   direnv allow .\n#\n# source_env pushes into each sourced file's directory while loading it,\n# so the scripts below resolve the project root from GUPPY_ROOT, not\n# $PWD.\nGUPPY_ROOT=\"$PWD\"\nsource_env tools/env/setup.sh\nsource_env tools/env/banner.sh\n\n"
+
+[[file]]
+  path = ".gitignore"
+  mode = "0644"
+  content = "# example-name — ignore rules scaffolded by guppy (base-toolchain).\n# Contextual ignores: only what this project's toggles enable.\n.direnv/\n/bazel-out\n/bazel-bin\n/bazel-testlogs\n/bazel-workspace\n.DS_Store\n*.swp\n\n"
+
+[[file]]
+  path = ".nvmrc"
+  mode = "0644"
+  content = "22\n\n"
+
+[[file]]
+  path = "AGENTS.md"
+  mode = "0644"
+  content = "# AGENTS.md\n\nGuidance for agents and human contributors working in example-name.\n\n## Conventions\n\n- Build with Bazel; the dev environment is hermetic (pinned toolchains,\n  direnv-activated) — never install tools globally.\n\n"
+
+[[file]]
+  path = "BUILD.bazel"
+  mode = "0644"
+  content = "# Root package for example-name — the environment contract needs a package\n# for `bazel build //...` to resolve. Language templates that extend\n# base-toolchain override this file with real targets.\n\n"
+
+[[file]]
+  path = "MODULE.bazel"
+  mode = "0644"
+  content = "# Workspace for example-name — scaffolded by guppy (base-toolchain).\n# Language templates that extend base-toolchain override this file to add\n# toolchain declarations (rules_go, node, …); the environment contract\n# lives in MODULE.bazel + the version pins (design §3.4).\nmodule(\n    name = \"example-name\",\n    version = \"0.1.0\",\n)\n\n"
+
+[[file]]
+  path = "README.md"
+  mode = "0644"
+  content = "# example-name\n\nScaffolded by [guppy](https://nicedata.work/guppy) from the `base-toolchain` template.\nThe dev environment is hermetic (Bazel-pinned, direnv-activated — design §3.4): run `direnv allow .` once, then `gp <verb>` inside this project (the `gp` shim appears in `.direnv/bin/` and disappears when you `cd` out).\n\nThe project workflow lives in `.guppy/project.toml` (`gp build`, `gp test`, …); every verb also works explicitly as `guppy project <verb>`, no direnv required.\n"
+
+[[file]]
+  path = "tools/env/banner.sh"
+  mode = "0644"
+  content = "# tools/env/banner.sh — one-line environment banner on activation.\n# Suppressed with GUPPY_QUIET=1 (the same switch the CLI honors, §6).\nROOT=\"${GUPPY_ROOT:-$PWD}\"\nif [ \"${GUPPY_QUIET:-0}\" != \"1\" ]; then\n  log_status \"example-name: hermetic env active (bazel $(cat \"$ROOT/.bazelversion\" 2>/dev/null || echo unpinned)); gp shims in .direnv/bin\"\nfi\n\n"
+
+[[file]]
+  path = "tools/env/setup.sh"
+  mode = "0644"
+  content = "# tools/env/setup.sh — activate the hermetic environment for example-name\n# (guppy environment contract, design §3.4). Sourced from .envrc by\n# direnv; idempotent, safe on every activation, and it never writes\n# outside the project tree.\nROOT=\"${GUPPY_ROOT:-$PWD}\"\n\nif ! has bazel; then\n  log_error \"bazel not found — install bazelisk: https://bazel.build/install/bazelisk\"\nfi\n\n# The shim dir: project-scoped shims live here, never on the global PATH.\n# The gp shim — the project face of guppy (§3.5) — is materialized on\n# every activation, so it always points at the currently installed\n# guppy and exists only while this project's environment is active.\nSHIM_DIR=\"$ROOT/.direnv/bin\"\nmkdir -p \"$SHIM_DIR\"\nif has guppy; then\n  ln -sfn \"$(command -v guppy)\" \"$SHIM_DIR/gp\"\nelse\n  log_status \"guppy not found — gp shim unavailable (fallback: guppy project <verb>)\"\nfi\nPATH_add \"$SHIM_DIR\"\n\n"

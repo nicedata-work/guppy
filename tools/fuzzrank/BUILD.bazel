@@ -1,0 +1,20 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+
+go_library(
+    name = "fuzzrank_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/nicedata-work/guppy/tools/fuzzrank",
+    visibility = ["//visibility:private"],
+)
+
+go_binary(
+    name = "fuzzrank",
+    embed = [":fuzzrank_lib"],
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "fuzzrank_test",
+    srcs = ["main_test.go"],
+    embed = [":fuzzrank_lib"],
+)

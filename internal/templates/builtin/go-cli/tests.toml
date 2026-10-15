@@ -1,0 +1,14 @@
+# Snapshot matrix for go-cli: the "default" case is implicit; the rows
+# below extend it (vars and toggles compose over the template defaults).
+
+[[case]]
+name = "minimal"
+[case.toggles]
+agents_md = false
+git = false
+
+[[case]]
+name = "acme"
+[case.vars]
+name = "acme-widget"
+module_path = "example.com/acme/{{ .name }}"

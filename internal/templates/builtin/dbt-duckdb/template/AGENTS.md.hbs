@@ -1,0 +1,17 @@
+{{ if .agents_md }}# AGENTS.md
+
+Guidance for agents and human contributors working in {{ .name }}.
+
+## Conventions
+
+- Build with Bazel; the dev environment is hermetic (pinned toolchains,
+  direnv-activated) — never install tools globally.
+- The dbt project lives in `dbt/` and mirrors the target database's schema
+  layout: `models/model/` (core models → schema `model`), `models/expose/`
+  (analysis-ready marts → schema `expose`), `models/semantic/` (governed
+  views → schema `semantic`).
+- Run dbt through the project verbs (`gp dbt build`, `gp dbt test`) so the
+  Bazel-pinned engine is used; never install dbt globally.
+- SQL style is enforced by sqlfluff and Python by ruff (`gp lint` /
+  `gp format`); keep both green before committing.
+{{ end }}

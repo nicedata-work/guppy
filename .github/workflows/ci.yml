@@ -1,0 +1,217 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test:
+    name: Bazel build & test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+          disk-cache: true
+          actions-cache: true
+      - name: Check BUILD files are gazelle-clean
+        run: bazel run //:gazelle -- -mode=diff
+      - name: Build
+        run: bazel build //...
+      - name: Test
+        run: bazel test //...
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - uses: golangci/golangci-lint-action@v8
+        with:
+          version: latest
+      - name: "Idiom check (bundled Go linters: vet, gofmt -s, modernizers)"
+        run: |
+          go vet ./...
+          test -z "$(gofmt -s -l .)"
+          go fix -diff ./...   # fails if any modernizer suggestion appears
+      - name: "Styleguide gates (T16 sort ban, T11 seam ban)"
+        run: |
+          set -euo pipefail
+          # T16: sort.* is banned in non-test code — slices.Sort/SortFunc only.
+          if hits=$(grep -rn --include='*.go' -E '\bsort\.(Slice|SliceStable|Strings|Sort|Stable)\(' internal cmd tools | grep -v '_test\.go'); then
+            echo "$hits"
+            echo 'sort.* found in non-test code (styleguide T16): migrate to slices.Sort/slices.SortFunc'
+            exit 1
+          fi
+          # T11: no package-level stdlib-function seams in non-test code
+          # (the `var writeFile = os.WriteFile` pattern — inject via an
+          # options-struct field instead, styleguide T11/G3).
+          if hits=$(grep -rn --include='*.go' -E '^var [a-zA-Z_]+ += +(os|exec|time|http)\.[A-Z]' internal cmd tools | grep -v '_test\.go'); then
+            echo "$hits"
+            echo 'package-level stdlib-function seam found (styleguide T11): move it onto an options struct'
+            exit 1
+          fi
+      - name: "CLI reference is up to date"
+        run: ./scripts/gen-docs.sh --check
+      - name: Shell script lint (shfmt)
+        run: |
+          sudo apt-get install -y shfmt
+          shfmt --diff --language-dialect posix install/install.sh
+          bash -n scripts/release.sh scripts/gen-docs.sh scripts/fuzz.sh scripts/smoke-install.sh scripts/smoke-project.sh scripts/smoke-distribution.sh scripts/smoke-catalog.sh scripts/smoke-signal.sh
+
+  fuzz:
+    name: Fuzz smoke (BM25-prioritized corpus)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Fuzz all targets (30s each, corpus distilled via tools/fuzzrank)
+        run: ./scripts/fuzz.sh
+
+  release-matrix:
+    name: Release matrix build (linux/darwin/windows × amd64/arm64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Build the full release matrix
+        run: ./scripts/release.sh --matrix 9.9.9
+      - name: Verify every cell's asset + detached checksum
+        run: |
+          set -euo pipefail
+          count=0
+          for cell in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
+            os="${cell%/*}"; arch="${cell#*/}"
+            asset="dist/guppy-9.9.9-$os-$arch.tar.gz"
+            test -f "$asset" || { echo "missing $asset"; exit 1; }
+            test -f "$asset.sha256" || { echo "missing $asset.sha256"; exit 1; }
+            (cd dist && sha256sum -c "$(basename "$asset").sha256")
+            # Windows assets must carry guppy.exe inside (install.ps1 contract).
+            if [ "$os" = windows ]; then
+              tar -tzf "$asset" | grep -q '^guppy.exe$' || { echo "$asset lacks guppy.exe"; exit 1; }
+            else
+              tar -tzf "$asset" | grep -q '^guppy$' || { echo "$asset lacks guppy"; exit 1; }
+            fi
+            count=$((count + 1))
+          done
+          test "$count" -eq 6
+          test "$(cat dist/latest.txt)" = 9.9.9
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-dist
+          path: dist/
+
+  installer-smoke:
+    name: Installer smoke test (bare container, linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Run installer smoke test
+        run: ./scripts/smoke-install.sh
+
+  signal-smoke:
+    name: Signal/interrupt smoke test (bare container)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+          disk-cache: true
+          actions-cache: true
+      - name: Build guppy
+        run: bazel build //cmd/guppy
+      - name: Run signal smoke test (real SIGINT/SIGTERM in a bare container)
+        run: ./scripts/smoke-signal.sh
+
+  installer-smoke-macos:
+    name: Installer smoke test (macOS host, release matrix cell)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: "Run installer smoke test (host fallback: isolated HOME)"
+        run: ./scripts/smoke-install.sh
+
+  installer-smoke-macos-intel:
+    name: Installer smoke test (macOS x86_64 host, release matrix cell)
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: "Run installer smoke test (host fallback: isolated HOME)"
+        run: ./scripts/smoke-install.sh
+
+  installer-smoke-windows:
+    name: Installer smoke test (Windows, release matrix cell)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Run installer smoke test
+        shell: pwsh
+        run: ./scripts/smoke-install.ps1
+
+  project-smoke:
+    name: Project contract smoke test (bare container)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+          disk-cache: true
+          actions-cache: true
+      - name: Build guppy
+        run: bazel build //cmd/guppy
+      - name: Run project smoke test
+        run: ./scripts/smoke-project.sh
+
+  distribution-smoke:
+    name: Distribution smoke test (bare container)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+          disk-cache: true
+          actions-cache: true
+      - name: Build guppy
+        run: bazel build //cmd/guppy
+      - name: Run distribution smoke test
+        run: ./scripts/smoke-distribution.sh
+
+  catalog-smoke:
+    name: Catalog & doctor smoke test (bare container)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+          disk-cache: true
+          actions-cache: true
+      - name: Build guppy
+        run: bazel build //cmd/guppy
+      - name: Run catalog smoke test
+        run: ./scripts/smoke-catalog.sh

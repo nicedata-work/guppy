@@ -1,0 +1,28 @@
+// Command {{ .name }} is a command-line tool scaffolded by guppy.
+package main
+
+import (
+	"flag"
+	"fmt"
+	"os"
+)
+
+func main() {
+	if err := run(os.Args[1:]); err != nil {
+		fmt.Fprintln(os.Stderr, "error:", err)
+		os.Exit(1)
+	}
+}
+
+func run(args []string) error {
+	flags := flag.NewFlagSet("{{ .name }}", flag.ContinueOnError)
+	greeting := flags.String("greeting", "hello", "greeting to print")
+	if err := flags.Parse(args); err != nil {
+		return err
+	}
+	fmt.Printf("%s from {{ .name }}\n", *greeting)
+	if rest := flags.Args(); len(rest) > 0 {
+		fmt.Println("args:", rest)
+	}
+	return nil
+}

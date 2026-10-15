@@ -1,0 +1,64 @@
+[sqlfluff]
+dialect = duckdb
+templater = jinja
+output_line_length = 200
+max_line_length = 120
+runaway_limit = 10
+ignore_templated_areas = True
+encoding = utf-8
+format = human
+sql_file_exts = .sql,.sql.j2,.dml,.ddl
+large_file_skip_byte_limit = 50000
+processes = 10
+
+[sqlfluff:indentation]
+indented_joins = False
+template_blocks_indent = True
+indent_unit = space
+tab_space_size = 2
+
+[sqlfluff:layout:type:comma]
+line_position = trailing
+
+[sqlfluff:templater]
+unwrap_wrapped_queries = False
+
+# dbt stub macros: lets sqlfluff lint dbt SQL outside of dbt — `ref()`,
+# `source()`, `config()` etc. render to placeholders instead of erroring.
+[sqlfluff:templater:jinja:macros]
+dbt_ref = {% macro ref(model_ref) %}{{model_ref}}{% endmacro %}
+dbt_source = {% macro source(source_name, table) %}{{source_name}}_{{table}}{% endmacro %}
+dbt_config = {% macro config() %}{% for k in kwargs %}{% endfor %}{% endmacro %}
+dbt_var = {% macro var(variable) %}item{% endmacro %}
+dbt_is_incremental = {% macro is_incremental() %}False{% endmacro %}
+
+[sqlfluff:rules]
+allow_scalar = True
+single_table_references = consistent
+unquoted_identifiers_policy = all
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.identifiers]
+extended_capitalisation_policy = lower
+unquoted_identifiers_policy = all
+
+[sqlfluff:rules:capitalisation.functions]
+capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.literals]
+capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.types]
+extended_capitalisation_policy = lower
+
+[sqlfluff:rules:convention.select_trailing_comma]
+select_clause_trailing_comma = forbid
+
+[sqlfluff:rules:convention.not_equal]
+preferred_not_equal_style = c_style
+
+[sqlfluff:rules:convention.count_rows]
+prefer_count_0 = False
+prefer_count_1 = False

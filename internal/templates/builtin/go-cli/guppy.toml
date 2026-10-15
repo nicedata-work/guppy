@@ -1,0 +1,21 @@
+id          = "go-cli"
+version     = "0.2.0"
+kind        = "cli"
+language    = "go"
+description = "Go CLI with a stdlib entrypoint, module, and README — extends base-toolchain"
+
+extends = ["base-toolchain"]
+
+[vars]
+module_path = { prompt = "Go module path", default = "github.com/acme/{{ .name }}" }
+
+# Axes this template actually wires: `tests` gates the go_test target and
+# main_test.go; `linters` gates the gazelle drift-check target.
+[defaults]
+linters = true
+tests   = true
+
+# `lint` is the hermetic gazelle drift check; build/test come from
+# base-toolchain.
+[gp]
+lint = { command = "bazel run //:gazelle -- -mode=diff", requires = ["bazel", "linters"] }

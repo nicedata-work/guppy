@@ -1,0 +1,28 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "manifest",
+    srcs = [
+        "axis.go",
+        "manifest.go",
+        "merge.go",
+        "testspec.go",
+        "validate.go",
+    ],
+    importpath = "github.com/nicedata-work/guppy/internal/manifest",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_burntsushi_toml//:toml",
+        "@com_github_masterminds_semver_v3//:semver",
+    ],
+)
+
+go_test(
+    name = "manifest_test",
+    srcs = [
+        "fuzz_test.go",
+        "gp_test.go",
+        "manifest_test.go",
+    ],
+    embed = [":manifest"],
+)

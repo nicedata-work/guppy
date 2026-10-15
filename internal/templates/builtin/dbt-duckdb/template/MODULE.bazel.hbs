@@ -1,0 +1,25 @@
+{{ if .bazel }}# Workspace for {{ .name }} — scaffolded by guppy (dbt-duckdb). The Python
+# toolchain and the dbt/sqlfluff/ruff closure are fetched hermetically from
+# requirements_lock.txt (design §3.4): nothing is expected from the machine's
+# global environment.
+module(
+    name = "{{ .name | kebab }}",
+    version = "0.1.0",
+)
+
+bazel_dep(name = "rules_python", version = "2.4.2")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    is_default = True,
+    python_version = "3.14",
+)
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "pypi",
+    python_version = "3.14",
+    requirements_lock = "//:requirements_lock.txt",
+)
+use_repo(pip, "pypi")
+{{ end }}

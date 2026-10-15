@@ -1,0 +1,36 @@
+{{ if .bazel }}load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
+load("@pypi//:requirements.bzl", "requirement")
+
+# dbt 2.0: the engine is Rust compiled into a Python wheel; the console
+# script and its closure are pinned by //:requirements_lock.txt. The pip
+# hub does not resolve extras of transitive dependencies, so dbt's
+# `mashumaro[msgpack]` requirement is declared explicitly here.
+py_console_script_binary(
+    name = "dbt",
+    pkg = "@pypi//dbt",
+    script = "dbt",
+    deps = [
+        requirement("mashumaro"),
+        requirement("msgpack"),
+    ],
+)
+{{ if .tests }}
+# Hermetic smoke test: `dbt build` end to end against a temp DuckDB file.
+py_test(
+    name = "smoke_test",
+    srcs = ["smoke_test.py"],
+    data = glob([
+        "dbt_project.yml",
+        "macros/**",
+        "models/**",
+        "profiles.yml",
+        "tests/**",
+    ]),
+    deps = [
+        requirement("dbt"),
+        requirement("mashumaro"),
+        requirement("msgpack"),
+    ],
+)
+{{ end }}{{ end }}

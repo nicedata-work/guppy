@@ -1,0 +1,7 @@
+{{ if .direnv }}# tools/env/banner.sh — one-line environment banner on activation.
+# Suppressed with GUPPY_QUIET=1 (the same switch the CLI honors, §6).
+ROOT="${GUPPY_ROOT:-$PWD}"
+if [ "${GUPPY_QUIET:-0}" != "1" ]; then
+  log_status "{{ .name }}: hermetic env active (bazel $(cat "$ROOT/.bazelversion" 2>/dev/null || echo unpinned)); gp shims in .direnv/bin"
+fi
+{{ end }}

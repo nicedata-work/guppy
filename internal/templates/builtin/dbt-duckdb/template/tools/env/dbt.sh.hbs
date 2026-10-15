@@ -1,0 +1,10 @@
+{{ if .direnv }}# tools/env/dbt.sh — dbt wiring for {{ .name }}: profiles live in dbt/,
+# the local DuckDB database under data/ (created on first activation so
+# the profile's path always resolves — the dbt 2.0 engine needs an
+# absolute DBT_DUCKDB_PATH, which this exports). Sourced from .envrc;
+# idempotent, safe on every activation.
+ROOT="${GUPPY_ROOT:-$PWD}"
+export DBT_PROFILES_DIR="$ROOT/dbt"
+export DBT_DUCKDB_PATH="$ROOT/data/{{ .name | kebab }}.duckdb"
+mkdir -p "$ROOT/data"
+{{ end }}

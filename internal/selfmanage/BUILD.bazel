@@ -1,0 +1,23 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "selfmanage",
+    srcs = [
+        "platform.go",
+        "uninstall.go",
+        "update.go",
+    ],
+    importpath = "github.com/nicedata-work/guppy/internal/selfmanage",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//internal/catalog",
+        "//internal/paths",
+    ],
+)
+
+go_test(
+    name = "selfmanage_test",
+    srcs = ["selfmanage_test.go"],
+    embed = [":selfmanage"],
+    deps = ["//internal/paths"],
+)

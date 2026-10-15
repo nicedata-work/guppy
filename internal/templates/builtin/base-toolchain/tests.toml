@@ -1,0 +1,2 @@
+# Snapshot cases for base-toolchain: the "default" case (var defaults +
+# default toggles) is implicit; add [[case]] rows to extend the matrix.

@@ -1,0 +1,17 @@
+# {{ .name }} — ignore rules scaffolded by guppy (dbt-duckdb).
+{{ if .git }}# Contextual ignores: only what this project's toggles enable.
+{{ end }}{{ if .direnv }}.direnv/
+{{ end }}{{ if .bazel }}/bazel-out
+/bazel-bin
+/bazel-testlogs
+/bazel-workspace
+{{ end }}{{ if .git }}.DS_Store
+*.swp
+{{ end }}
+# dbt + DuckDB runtime state (the local database lives in data/)
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+data/*.duckdb
+__pycache__/
+.ruff_cache/

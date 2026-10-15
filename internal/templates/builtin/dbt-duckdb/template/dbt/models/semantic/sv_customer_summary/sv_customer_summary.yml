@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: sv_customer_summary
+    description: >-
+      Placeholder semantic layer — the governed surface of the customer
+      summary mart. Curate the columns consumers should see here.
+    columns:
+      - name: customer_id
+        data_type: varchar
+        description: Dimension key — one row per customer
+      - name: customer_name
+        data_type: varchar
+        description: Dimension — display name of the customer
+      - name: segment
+        data_type: varchar
+        description: Dimension — commercial segment of the customer
+      - name: order_count
+        data_type: bigint
+        description: Metric — placeholder order count

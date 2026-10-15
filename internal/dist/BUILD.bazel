@@ -1,0 +1,21 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "dist",
+    srcs = [
+        "dist.go",
+        "install.go",
+    ],
+    importpath = "github.com/nicedata-work/guppy/internal/dist",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//internal/fileutil",
+        "@com_github_burntsushi_toml//:toml",
+    ],
+)
+
+go_test(
+    name = "dist_test",
+    srcs = ["dist_test.go"],
+    embed = [":dist"],
+)

@@ -1,0 +1,59 @@
+[[file]]
+  path = ".bazelversion"
+  mode = "0644"
+  content = "9.3.0\n\n"
+
+[[file]]
+  path = ".envrc"
+  mode = "0644"
+  content = "# direnv wiring for example-name — the guppy environment contract\n# (design §3.4): pinned toolchains via Bazel, project-scoped shims in\n# .direnv/bin/, nothing on the global PATH. Activate with:\n#\n#   direnv allow .\n#\n# source_env pushes into each sourced file's directory while loading it,\n# so the scripts below resolve the project root from GUPPY_ROOT, not\n# $PWD.\nGUPPY_ROOT=\"$PWD\"\nsource_env tools/env/setup.sh\nsource_env tools/env/banner.sh\n\n"
+
+[[file]]
+  path = ".gitignore"
+  mode = "0644"
+  content = "# example-name — ignore rules scaffolded by guppy (base-toolchain).\n.direnv/\n/bazel-out\n/bazel-bin\n/bazel-testlogs\n/bazel-workspace\n\n"
+
+[[file]]
+  path = ".nvmrc"
+  mode = "0644"
+  content = "22\n\n"
+
+[[file]]
+  path = "BUILD.bazel"
+  mode = "0644"
+  content = "load(\"@gazelle//:def.bzl\", \"gazelle\")\nload(\"@rules_go//go:def.bzl\", \"go_binary\", \"go_library\", \"go_test\")\n\n# gazelle:prefix github.com/acme/example-name\ngazelle(name = \"gazelle\")\n\ngo_binary(\n    name = \"example-name\",\n    embed = [\":example-name_lib\"],\n    visibility = [\"//visibility:public\"],\n)\n\ngo_library(\n    name = \"example-name_lib\",\n    srcs = [\"main.go\"],\n    importpath = \"github.com/acme/example-name\",\n    visibility = [\"//visibility:public\"],\n)\n\ngo_test(\n    name = \"example-name_test\",\n    srcs = [\"main_test.go\"],\n    embed = [\":example-name_lib\"],\n)\n"
+
+[[file]]
+  path = "MODULE.bazel"
+  mode = "0644"
+  content = "# Workspace for example-name — scaffolded by guppy (go-cli). The Go SDK is\n# fetched hermetically by rules_go (design §3.4): nothing is expected from\n# the machine's global environment.\nmodule(\n    name = \"example-name\",\n    version = \"0.1.0\",\n)\n\nbazel_dep(name = \"rules_go\", version = \"0.64.2\")\n\nbazel_dep(name = \"gazelle\", version = \"0.54.0\")\n\ngo_sdk = use_extension(\"@rules_go//go:extensions.bzl\", \"go_sdk\")\ngo_sdk.download(version = \"1.27.2\")\n\n"
+
+[[file]]
+  path = "README.md"
+  mode = "0644"
+  content = "# example-name\n\nA Go CLI scaffolded by [guppy](https://nicedata.work/guppy) from the\n`go-cli` template (extends `base-toolchain`).\n\nThe dev environment is hermetic (Bazel + direnv, design §3.4):\n\n```sh\ndirenv allow . # once per checkout — gp appears in .direnv/bin/ on cd\ngp build         # bazel build //...\ngp test          # bazel test //...\ngp lint          # bazel run //:gazelle -- -mode=diff (BUILD drift check)\n```\n\nNo direnv? The same verbs work explicitly: `guppy project test`.\n\n(A C compiler — gcc or clang — is the one system dependency rules_go's\ncgo runtime needs; every versioned tool is pinned.)\n\nOr run the entrypoint directly:\n\n```sh\ngo build -o example-name .\n./example-name --greeting hi\n```\n"
+
+[[file]]
+  path = "go.mod"
+  mode = "0644"
+  content = "module github.com/acme/example-name\n\ngo 1.27\n"
+
+[[file]]
+  path = "main.go"
+  mode = "0644"
+  content = "// Command example-name is a command-line tool scaffolded by guppy.\npackage main\n\nimport (\n\t\"flag\"\n\t\"fmt\"\n\t\"os\"\n)\n\nfunc main() {\n\tif err := run(os.Args[1:]); err != nil {\n\t\tfmt.Fprintln(os.Stderr, \"error:\", err)\n\t\tos.Exit(1)\n\t}\n}\n\nfunc run(args []string) error {\n\tflags := flag.NewFlagSet(\"example-name\", flag.ContinueOnError)\n\tgreeting := flags.String(\"greeting\", \"hello\", \"greeting to print\")\n\tif err := flags.Parse(args); err != nil {\n\t\treturn err\n\t}\n\tfmt.Printf(\"%s from example-name\\n\", *greeting)\n\tif rest := flags.Args(); len(rest) > 0 {\n\t\tfmt.Println(\"args:\", rest)\n\t}\n\treturn nil\n}\n"
+
+[[file]]
+  path = "main_test.go"
+  mode = "0644"
+  content = "package main\n\nimport \"testing\"\n\nfunc TestRunDefault(t *testing.T) {\n\tif err := run(nil); err != nil {\n\t\tt.Fatalf(\"run(nil): %v\", err)\n\t}\n}\n\nfunc TestRunBadFlag(t *testing.T) {\n\tif err := run([]string{\"-greeting\"}); err == nil {\n\t\tt.Fatal(\"run with a malformed flag should fail\")\n\t}\n}\n\n"
+
+[[file]]
+  path = "tools/env/banner.sh"
+  mode = "0644"
+  content = "# tools/env/banner.sh — one-line environment banner on activation.\n# Suppressed with GUPPY_QUIET=1 (the same switch the CLI honors, §6).\nROOT=\"${GUPPY_ROOT:-$PWD}\"\nif [ \"${GUPPY_QUIET:-0}\" != \"1\" ]; then\n  log_status \"example-name: hermetic env active (bazel $(cat \"$ROOT/.bazelversion\" 2>/dev/null || echo unpinned)); gp shims in .direnv/bin\"\nfi\n\n"
+
+[[file]]
+  path = "tools/env/setup.sh"
+  mode = "0644"
+  content = "# tools/env/setup.sh — activate the hermetic environment for example-name\n# (guppy environment contract, design §3.4). Sourced from .envrc by\n# direnv; idempotent, safe on every activation, and it never writes\n# outside the project tree.\nROOT=\"${GUPPY_ROOT:-$PWD}\"\n\nif ! has bazel; then\n  log_error \"bazel not found — install bazelisk: https://bazel.build/install/bazelisk\"\nfi\n\n# The shim dir: project-scoped shims live here, never on the global PATH.\n# The gp shim — the project face of guppy (§3.5) — is materialized on\n# every activation, so it always points at the currently installed\n# guppy and exists only while this project's environment is active.\nSHIM_DIR=\"$ROOT/.direnv/bin\"\nmkdir -p \"$SHIM_DIR\"\nif has guppy; then\n  ln -sfn \"$(command -v guppy)\" \"$SHIM_DIR/gp\"\nelse\n  log_status \"guppy not found — gp shim unavailable (fallback: guppy project <verb>)\"\nfi\nPATH_add \"$SHIM_DIR\"\n\n"

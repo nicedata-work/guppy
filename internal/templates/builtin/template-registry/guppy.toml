@@ -1,0 +1,19 @@
+id          = "template-registry"
+version     = "0.1.0"
+kind        = "infra"
+language    = "none"
+description = "A team's shared template registry: templates/ drop-dir, CI that validates every template and rebuilds index.json + tarballs, ready for [[template.registries]]"
+
+[vars]
+name = { prompt = "Repository name" }
+
+# A content repo, not a codebase: git only — no Bazel, no direnv, no
+# linters. The registry build is Python stdlib (tomllib/tarfile), the
+# validation runs guppy itself (CI installs it).
+[defaults]
+git = true
+
+[gp]
+build = "python3 scripts/build-registry.py"
+test  = "bash scripts/validate-templates.sh"
+lint  = "python3 scripts/build-registry.py --check"

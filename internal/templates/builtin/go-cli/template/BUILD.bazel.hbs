@@ -1,0 +1,25 @@
+{{ if .bazel }}{{ if .linters }}load("@gazelle//:def.bzl", "gazelle")
+{{ end }}load("@rules_go//go:def.bzl", "go_binary", "go_library"{{ if .tests }}, "go_test"{{ end }})
+
+{{ if .linters }}# gazelle:prefix {{ .module_path }}
+gazelle(name = "gazelle")
+
+{{ end }}go_binary(
+    name = "{{ .name | kebab }}",
+    embed = [":{{ .name | kebab }}_lib"],
+    visibility = ["//visibility:public"],
+)
+
+go_library(
+    name = "{{ .name | kebab }}_lib",
+    srcs = ["main.go"],
+    importpath = "{{ .module_path }}",
+    visibility = ["//visibility:public"],
+)
+{{ if .tests }}
+go_test(
+    name = "{{ .name | kebab }}_test",
+    srcs = ["main_test.go"],
+    embed = [":{{ .name | kebab }}_lib"],
+)
+{{ end }}{{ end }}

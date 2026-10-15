@@ -1,0 +1,4 @@
+# dbt build artifacts are compiled copies of the models — never linted.
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/

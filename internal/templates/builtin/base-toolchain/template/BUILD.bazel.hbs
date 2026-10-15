@@ -1,0 +1,4 @@
+{{ if .bazel }}# Root package for {{ .name }} — the environment contract needs a package
+# for `bazel build //...` to resolve. Language templates that extend
+# base-toolchain override this file with real targets.
+{{ end }}

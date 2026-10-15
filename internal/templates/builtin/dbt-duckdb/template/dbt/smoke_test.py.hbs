@@ -1,0 +1,52 @@
+{{ if .tests }}"""Hermetic smoke test: `dbt build` end to end (guppy dbt-duckdb).
+
+Runs against a temp DuckDB file with temp target/log dirs, so neither the
+checked-in project tree nor the runfiles are written to.
+"""
+
+import os
+import sys
+import tempfile
+
+from dbt.runner import dbtRunner
+
+
+def project_dir() -> str:
+    """Locate dbt/ in the test runfiles (cwd or TEST_SRCDIR layouts)."""
+    candidates = [
+        os.path.join(os.getcwd(), "dbt"),
+        os.path.join(
+            os.environ.get("TEST_SRCDIR", ""),
+            os.environ.get("TEST_WORKSPACE", "_main"),
+            "dbt",
+        ),
+    ]
+    for candidate in candidates:
+        if os.path.isfile(os.path.join(candidate, "dbt_project.yml")):
+            return candidate
+    raise SystemExit(f"dbt project not found in runfiles; tried: {candidates}")
+
+
+def main() -> int:
+    project = project_dir()
+    with tempfile.TemporaryDirectory() as tmp:
+        # The profile's relative duckdb path resolves against the cwd; the
+        # DBT_* path vars keep target/ and logs/ inside the sandbox too.
+        os.makedirs(os.path.join(tmp, "data"))
+        os.environ.update(
+            {
+                "DBT_DUCKDB_PATH": os.path.join(tmp, "data", "smoke.duckdb"),
+                "DBT_PROJECT_DIR": project,
+                "DBT_PROFILES_DIR": project,
+                "DBT_LOG_PATH": os.path.join(tmp, "logs"),
+                "DBT_TARGET_PATH": os.path.join(tmp, "target"),
+            }
+        )
+        os.chdir(tmp)
+        result = dbtRunner().invoke(["build"])
+    return 0 if result.success else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+{{ end }}

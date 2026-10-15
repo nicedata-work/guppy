@@ -1,0 +1,22 @@
+{{ if .bazel }}# Root package for {{ .name }} — hermetic linters from the pip hub; the
+# dbt toolchain itself lives in //dbt (guppy dbt-duckdb template).
+{{ if .linters }}load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_python//python/entry_points:py_console_script_binary.bzl", "py_console_script_binary")
+load("@pypi//:requirements.bzl", "requirement")
+
+py_console_script_binary(
+    name = "sqlfluff",
+    pkg = "@pypi//sqlfluff",
+    script = "sqlfluff",
+)
+
+# ruff ships its CLI as a wheel-installed binary rather than a console
+# script, so it is wrapped through the package (see tools/ruff_main.py).
+py_binary(
+    name = "ruff",
+    srcs = ["tools/ruff_main.py"],
+    data = ["@pypi//ruff:data"],
+    main = "tools/ruff_main.py",
+    deps = [requirement("ruff")],
+)
+{{ end }}{{ end }}

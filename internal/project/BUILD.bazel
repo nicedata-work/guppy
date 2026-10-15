@@ -1,0 +1,27 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "project",
+    srcs = [
+        "marker.go",
+        "runner.go",
+        "verbs.go",
+    ],
+    importpath = "github.com/nicedata-work/guppy/internal/project",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//internal/manifest",
+        "//internal/render",
+        "@com_github_burntsushi_toml//:toml",
+    ],
+)
+
+go_test(
+    name = "project_test",
+    srcs = ["project_test.go"],
+    embed = [":project"],
+    deps = [
+        "//internal/manifest",
+        "//internal/render",
+    ],
+)

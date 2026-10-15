@@ -1,0 +1,13 @@
+{{ if .direnv }}# direnv wiring for {{ .name }} — the guppy environment contract
+# (design §3.4): pinned toolchains via Bazel, project-scoped shims in
+# .direnv/bin/, nothing on the global PATH. Activate with:
+#
+#   direnv allow .
+#
+# source_env pushes into each sourced file's directory while loading it,
+# so the scripts below resolve the project root from GUPPY_ROOT, not
+# $PWD.
+GUPPY_ROOT="$PWD"
+source_env tools/env/setup.sh
+source_env tools/env/banner.sh
+{{ end }}

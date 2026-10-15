@@ -1,0 +1,16 @@
+{{ if .tests }}package main
+
+import "testing"
+
+func TestRunDefault(t *testing.T) {
+	if err := run(nil); err != nil {
+		t.Fatalf("run(nil): %v", err)
+	}
+}
+
+func TestRunBadFlag(t *testing.T) {
+	if err := run([]string{"-greeting"}); err == nil {
+		t.Fatal("run with a malformed flag should fail")
+	}
+}
+{{ end }}

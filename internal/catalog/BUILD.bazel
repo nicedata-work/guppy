@@ -1,0 +1,26 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "catalog",
+    srcs = [
+        "hook.go",
+        "index.go",
+    ],
+    importpath = "github.com/nicedata-work/guppy/internal/catalog",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//internal/fileutil",
+        "//internal/project",
+        "@com_github_burntsushi_toml//:toml",
+    ],
+)
+
+go_test(
+    name = "catalog_test",
+    srcs = [
+        "hook_test.go",
+        "index_test.go",
+    ],
+    embed = [":catalog"],
+    deps = ["@tools_gotest_v3//assert"],
+)

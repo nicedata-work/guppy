@@ -1,0 +1,28 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "scaffold",
+    srcs = [
+        "diff.go",
+        "scaffold.go",
+    ],
+    importpath = "github.com/nicedata-work/guppy/internal/scaffold",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//internal/project",
+        "//internal/render",
+    ],
+)
+
+go_test(
+    name = "scaffold_test",
+    srcs = [
+        "audit_test.go",
+        "scaffold_test.go",
+    ],
+    embed = [":scaffold"],
+    deps = [
+        "//internal/render",
+        "@tools_gotest_v3//assert",
+    ],
+)

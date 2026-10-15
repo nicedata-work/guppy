@@ -1,0 +1,33 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "render",
+    srcs = [
+        "analyze.go",
+        "glob.go",
+        "lint.go",
+        "parse.go",
+        "render.go",
+    ],
+    importpath = "github.com/nicedata-work/guppy/internal/render",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//internal/manifest",
+        "//internal/templates",
+    ],
+)
+
+go_test(
+    name = "render_test",
+    srcs = [
+        "engine_test.go",
+        "fuzz_test.go",
+        "parse_test.go",
+        "render_test.go",
+    ],
+    embed = [":render"],
+    deps = [
+        "//internal/manifest",
+        "//internal/templates",
+    ],
+)

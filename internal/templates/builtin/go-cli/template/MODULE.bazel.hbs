@@ -1,0 +1,15 @@
+{{ if .bazel }}# Workspace for {{ .name }} — scaffolded by guppy (go-cli). The Go SDK is
+# fetched hermetically by rules_go (design §3.4): nothing is expected from
+# the machine's global environment.
+module(
+    name = "{{ .name | kebab }}",
+    version = "0.1.0",
+)
+
+bazel_dep(name = "rules_go", version = "0.64.2")
+{{ if .linters }}
+bazel_dep(name = "gazelle", version = "0.54.0")
+{{ end }}
+go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
+go_sdk.download(version = "1.27.2")
+{{ end }}

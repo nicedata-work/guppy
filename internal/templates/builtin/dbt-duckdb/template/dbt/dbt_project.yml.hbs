@@ -1,0 +1,25 @@
+name: "{{ .name | snake }}"
+config-version: 2
+profile: "local"
+require-dbt-version: [">=2.0,<3"]
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+target-path: "target"
+log-path: "logs"
+clean-targets: ["target", "logs"]
+
+models:
+  {{ .name | snake }}:
+    +materialized: view
+    +on_schema_change: append_new_columns
+    +persist_docs:
+      relation: true
+      columns: true
+    model:
+      +schema: model
+    expose:
+      +schema: expose
+    semantic:
+      +schema: semantic

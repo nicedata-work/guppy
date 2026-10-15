@@ -1,0 +1,23 @@
+{{ if .direnv }}# tools/env/setup.sh — activate the hermetic environment for {{ .name }}
+# (guppy environment contract, design §3.4). Sourced from .envrc by
+# direnv; idempotent, safe on every activation, and it never writes
+# outside the project tree.
+ROOT="${GUPPY_ROOT:-$PWD}"
+
+if ! has bazel; then
+  log_error "bazel not found — install bazelisk: https://bazel.build/install/bazelisk"
+fi
+
+# The shim dir: project-scoped shims live here, never on the global PATH.
+# The gp shim — the project face of guppy (§3.5) — is materialized on
+# every activation, so it always points at the currently installed
+# guppy and exists only while this project's environment is active.
+SHIM_DIR="$ROOT/.direnv/bin"
+mkdir -p "$SHIM_DIR"
+if has guppy; then
+  ln -sfn "$(command -v guppy)" "$SHIM_DIR/gp"
+else
+  log_status "guppy not found — gp shim unavailable (fallback: guppy project <verb>)"
+fi
+PATH_add "$SHIM_DIR"
+{{ end }}

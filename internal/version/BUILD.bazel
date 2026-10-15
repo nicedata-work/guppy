@@ -1,0 +1,18 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "version",
+    srcs = [
+        "compare.go",
+        "version.go",
+    ],
+    importpath = "github.com/nicedata-work/guppy/internal/version",
+    visibility = ["//visibility:public"],
+    deps = ["@com_github_masterminds_semver_v3//:semver"],
+)
+
+go_test(
+    name = "version_test",
+    srcs = ["compare_test.go"],
+    embed = [":version"],
+)

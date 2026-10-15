@@ -1,0 +1,134 @@
+[[file]]
+  path = ".bazelversion"
+  mode = "0644"
+  content = "9.3.0\n\n"
+
+[[file]]
+  path = ".envrc"
+  mode = "0644"
+  content = "# direnv wiring for example-name — the guppy environment contract\n# (design §3.4): pinned toolchains via Bazel, project-scoped shims in\n# .direnv/bin/, nothing on the global PATH. Activate with:\n#\n#   direnv allow .\n#\n# source_env pushes into each sourced file's directory while loading it,\n# so the scripts below resolve the project root from GUPPY_ROOT, not\n# $PWD.\nGUPPY_ROOT=\"$PWD\"\nsource_env tools/env/setup.sh\nsource_env tools/env/dbt.sh\nsource_env tools/env/banner.sh\n\n"
+
+[[file]]
+  path = ".gitignore"
+  mode = "0644"
+  content = "# example-name — ignore rules scaffolded by guppy (dbt-duckdb).\n# Contextual ignores: only what this project's toggles enable.\n.direnv/\n/bazel-out\n/bazel-bin\n/bazel-testlogs\n/bazel-workspace\n.DS_Store\n*.swp\n\n# dbt + DuckDB runtime state (the local database lives in data/)\ndbt/target/\ndbt/logs/\ndbt/dbt_packages/\ndata/*.duckdb\n__pycache__/\n.ruff_cache/\n"
+
+[[file]]
+  path = ".nvmrc"
+  mode = "0644"
+  content = "22\n\n"
+
+[[file]]
+  path = ".sqlfluff"
+  mode = "0644"
+  content = "[sqlfluff]\ndialect = duckdb\ntemplater = jinja\noutput_line_length = 200\nmax_line_length = 120\nrunaway_limit = 10\nignore_templated_areas = True\nencoding = utf-8\nformat = human\nsql_file_exts = .sql,.sql.j2,.dml,.ddl\nlarge_file_skip_byte_limit = 50000\nprocesses = 10\n\n[sqlfluff:indentation]\nindented_joins = False\ntemplate_blocks_indent = True\nindent_unit = space\ntab_space_size = 2\n\n[sqlfluff:layout:type:comma]\nline_position = trailing\n\n[sqlfluff:templater]\nunwrap_wrapped_queries = False\n\n# dbt stub macros: lets sqlfluff lint dbt SQL outside of dbt — `ref()`,\n# `source()`, `config()` etc. render to placeholders instead of erroring.\n[sqlfluff:templater:jinja:macros]\ndbt_ref = {% macro ref(model_ref) %}{{model_ref}}{% endmacro %}\ndbt_source = {% macro source(source_name, table) %}{{source_name}}_{{table}}{% endmacro %}\ndbt_config = {% macro config() %}{% for k in kwargs %}{% endfor %}{% endmacro %}\ndbt_var = {% macro var(variable) %}item{% endmacro %}\ndbt_is_incremental = {% macro is_incremental() %}False{% endmacro %}\n\n[sqlfluff:rules]\nallow_scalar = True\nsingle_table_references = consistent\nunquoted_identifiers_policy = all\n\n[sqlfluff:rules:capitalisation.keywords]\ncapitalisation_policy = lower\n\n[sqlfluff:rules:capitalisation.identifiers]\nextended_capitalisation_policy = lower\nunquoted_identifiers_policy = all\n\n[sqlfluff:rules:capitalisation.functions]\ncapitalisation_policy = lower\n\n[sqlfluff:rules:capitalisation.literals]\ncapitalisation_policy = lower\n\n[sqlfluff:rules:capitalisation.types]\nextended_capitalisation_policy = lower\n\n[sqlfluff:rules:convention.select_trailing_comma]\nselect_clause_trailing_comma = forbid\n\n[sqlfluff:rules:convention.not_equal]\npreferred_not_equal_style = c_style\n\n[sqlfluff:rules:convention.count_rows]\nprefer_count_0 = False\nprefer_count_1 = False\n"
+
+[[file]]
+  path = ".sqlfluffignore"
+  mode = "0644"
+  content = "# dbt build artifacts are compiled copies of the models — never linted.\ndbt/target/\ndbt/logs/\ndbt/dbt_packages/\n"
+
+[[file]]
+  path = "BUILD.bazel"
+  mode = "0644"
+  content = "# Root package for example-name — hermetic linters from the pip hub; the\n# dbt toolchain itself lives in //dbt (guppy dbt-duckdb template).\n\n"
+
+[[file]]
+  path = "MODULE.bazel"
+  mode = "0644"
+  content = "# Workspace for example-name — scaffolded by guppy (dbt-duckdb). The Python\n# toolchain and the dbt/sqlfluff/ruff closure are fetched hermetically from\n# requirements_lock.txt (design §3.4): nothing is expected from the machine's\n# global environment.\nmodule(\n    name = \"example-name\",\n    version = \"0.1.0\",\n)\n\nbazel_dep(name = \"rules_python\", version = \"2.4.2\")\n\npython = use_extension(\"@rules_python//python/extensions:python.bzl\", \"python\")\npython.toolchain(\n    is_default = True,\n    python_version = \"3.14\",\n)\n\npip = use_extension(\"@rules_python//python/extensions:pip.bzl\", \"pip\")\npip.parse(\n    hub_name = \"pypi\",\n    python_version = \"3.14\",\n    requirements_lock = \"//:requirements_lock.txt\",\n)\nuse_repo(pip, \"pypi\")\n\n"
+
+[[file]]
+  path = "README.md"
+  mode = "0644"
+  content = "# example-name\n\nA dbt 2.0 project on DuckDB scaffolded by [guppy](https://nicedata.work/guppy)\nfrom the `dbt-duckdb` template (extends `base-toolchain`).\n\nThe dev environment is hermetic(Bazel-pinned, direnv-activated — design §3.4):\nrun `direnv allow .` once, then use the project verbs:\n\n```sh\ngp dbt build     # dbt build — models → tests (via //dbt:dbt; sets DBT_DUCKDB_PATH)\ngp dbt test      # dbt data/singular tests only; extra dbt args pass through\ngp test          # bazel test //... — hermetic dbt smoke test\ngp lint          # sqlfluff over dbt/ + ruff over Python\ngp format        # ruff format\n```\n\nNo direnv? The same verbs work explicitly: `guppy project dbt build`.\nThe `dbt` verb needs `DBT_DUCKDB_PATH` (absolute path to the local\ndatabase) — it is exported by `tools/env/dbt.sh` under direnv and set\ninline by the verb; raw `bazel run //dbt:dbt` needs it exported by hand.\n\n## Layout\n\n```text\ndbt/\n├── dbt_project.yml    # +schema mapping: model / expose / semantic\n├── profiles.yml       # local duckdb profile; path from DBT_DUCKDB_PATH\n├── macros/            # generate_schema_name: custom schemas land unprefixed\n├── models/\n│   ├── model/         # core models      → schema `model`\n│   ├── expose/        # analysis-ready   → schema `expose`\n│   └── semantic/      # governed views   → schema `semantic`\n└── tests/             # singular tests\n```\n\nThe scaffolded models are placeholders — replace their logic, keep the\nlayering: `expose` joins the model layer into analysis-ready relations,\n`semantic` curates what consumers see.\n\n## Toolchain\n\nPython deps (dbt 2.0, sqlfluff, ruff) are declared in `pyproject.toml` and\npinned in `requirements_lock.txt`, which MODULE.bazel feeds to the pip hub —\ndbt 2.0 is a Rust engine shipped as a Python wheel, fetched per host platform\nat Bazel fetch time. To bump dependencies:\n\n```sh\ngp lock         # uv pip compile --python-version 3.14 pyproject.toml -o requirements_lock.txt\n```\n"
+
+[[file]]
+  path = "data/.gitkeep"
+  mode = "0644"
+  content = ""
+
+[[file]]
+  path = "dbt/BUILD.bazel"
+  mode = "0644"
+  content = "load(\"@rules_python//python:defs.bzl\", \"py_test\")\nload(\"@rules_python//python/entry_points:py_console_script_binary.bzl\", \"py_console_script_binary\")\nload(\"@pypi//:requirements.bzl\", \"requirement\")\n\n# dbt 2.0: the engine is Rust compiled into a Python wheel; the console\n# script and its closure are pinned by //:requirements_lock.txt. The pip\n# hub does not resolve extras of transitive dependencies, so dbt's\n# `mashumaro[msgpack]` requirement is declared explicitly here.\npy_console_script_binary(\n    name = \"dbt\",\n    pkg = \"@pypi//dbt\",\n    script = \"dbt\",\n    deps = [\n        requirement(\"mashumaro\"),\n        requirement(\"msgpack\"),\n    ],\n)\n\n"
+
+[[file]]
+  path = "dbt/dbt_project.yml"
+  mode = "0644"
+  content = "name: \"example_name\"\nconfig-version: 2\nprofile: \"local\"\nrequire-dbt-version: [\">=2.0,<3\"]\n\nmodel-paths: [\"models\"]\ntest-paths: [\"tests\"]\nmacro-paths: [\"macros\"]\ntarget-path: \"target\"\nlog-path: \"logs\"\nclean-targets: [\"target\", \"logs\"]\n\nmodels:\n  example_name:\n    +materialized: view\n    +on_schema_change: append_new_columns\n    +persist_docs:\n      relation: true\n      columns: true\n    model:\n      +schema: model\n    expose:\n      +schema: expose\n    semantic:\n      +schema: semantic\n"
+
+[[file]]
+  path = "dbt/macros/generate_schema_name.sql"
+  mode = "0644"
+  content = "{# Custom schemas land unprefixed: model / expose / semantic. #}\n{% macro generate_schema_name(custom_schema_name, node) -%}\n  {%- if custom_schema_name is not none -%}\n    {{ custom_schema_name | trim }}\n  {%- else -%}\n    {{ target.schema }}\n  {%- endif -%}\n{%- endmacro %}\n"
+
+[[file]]
+  path = "dbt/models/expose/customer_summary/customer_summary.sql"
+  mode = "0644"
+  content = "-- Placeholder expose-layer mart over the model layer.\nselect\n  c.customer_id,\n  c.customer_name,\n  c.segment,\n  count(*) as order_count\nfrom {{ ref('dim_customer') }} as c\ngroup by 1, 2, 3\n"
+
+[[file]]
+  path = "dbt/models/expose/customer_summary/customer_summary.yml"
+  mode = "0644"
+  content = "version: 2\n\nmodels:\n  - name: customer_summary\n    description: >-\n      Placeholder expose-layer mart — one row per customer with a summary\n      attribute. Replace with analysis-ready logic over the model layer.\n    columns:\n      - name: customer_id\n        data_type: varchar\n        description: One row per customer\n        data_tests:\n          - unique\n          - not_null\n      - name: customer_name\n        data_type: varchar\n        description: Display name of the customer\n      - name: segment\n        data_type: varchar\n        description: Commercial segment of the customer\n      - name: order_count\n        data_type: bigint\n        description: Placeholder metric — replace with real logic\n"
+
+[[file]]
+  path = "dbt/models/model/dim_customer/dim_customer.sql"
+  mode = "0644"
+  content = "{{ config(materialized='table') }}\n\n-- Placeholder dimension: replace with a real source (seed, source table,\n-- or upstream model).\nwith customers as (\n  select\n    t.customer_id,\n    t.customer_name,\n    t.segment\n  from (\n    values\n    ('C001', 'acme', 'enterprise'),\n    ('C002', 'globex', 'smb'),\n    ('C003', 'initech', 'enterprise'),\n  ) as t (customer_id, customer_name, segment)\n)\n\nselect\n  customer_id,\n  customer_name,\n  segment\nfrom customers\n"
+
+[[file]]
+  path = "dbt/models/model/dim_customer/dim_customer.yml"
+  mode = "0644"
+  content = "version: 2\n\nmodels:\n  - name: dim_customer\n    description: Placeholder customer dimension — one row per customer.\n    columns:\n      - name: customer_id\n        data_type: varchar\n        description: Primary key of the dimension\n        data_tests:\n          - unique\n          - not_null\n      - name: customer_name\n        data_type: varchar\n        description: Display name of the customer\n      - name: segment\n        data_type: varchar\n        description: Commercial segment of the customer\n"
+
+[[file]]
+  path = "dbt/models/semantic/sv_customer_summary/sv_customer_summary.sql"
+  mode = "0644"
+  content = "-- Placeholder semantic layer: a governed view over the expose mart.\n-- (DuckDB's semantic_views extension can upgrade this to metrics/dimensions.)\nselect\n  customer_id,\n  customer_name,\n  segment,\n  order_count\nfrom {{ ref('customer_summary') }}\n"
+
+[[file]]
+  path = "dbt/models/semantic/sv_customer_summary/sv_customer_summary.yml"
+  mode = "0644"
+  content = "version: 2\n\nmodels:\n  - name: sv_customer_summary\n    description: >-\n      Placeholder semantic layer — the governed surface of the customer\n      summary mart. Curate the columns consumers should see here.\n    columns:\n      - name: customer_id\n        data_type: varchar\n        description: Dimension key — one row per customer\n      - name: customer_name\n        data_type: varchar\n        description: Dimension — display name of the customer\n      - name: segment\n        data_type: varchar\n        description: Dimension — commercial segment of the customer\n      - name: order_count\n        data_type: bigint\n        description: Metric — placeholder order count\n"
+
+[[file]]
+  path = "dbt/profiles.yml"
+  mode = "0644"
+  content = "# Local DuckDB profile — verbatim payload (not a .hbs file): dbt's own\n# Jinja (env_var below) collides with the guppy renderer's double-brace\n# syntax, and the profile name is the fixed \"local\", so no substitution is\n# needed. The database path comes from DBT_DUCKDB_PATH, exported by\n# tools/env/dbt.sh and the `gp dbt` verb: the dbt 2.0 engine resolves\n# relative paths against its own binary location under `bazel run`, so an\n# absolute path is required.\nlocal:\n  target: local\n\n  outputs:\n    local:\n      type: duckdb\n      path: \"{{ env_var('DBT_DUCKDB_PATH') }}\"\n      threads: 4\n"
+
+[[file]]
+  path = "dbt/tests/assert_known_segments.sql"
+  mode = "0644"
+  content = "-- Singular test: fails if dim_customer carries an unknown segment.\nselect distinct segment\nfrom {{ ref('dim_customer') }}\nwhere segment not in ('enterprise', 'smb')\n"
+
+[[file]]
+  path = "pyproject.toml"
+  mode = "0644"
+  content = "[project]\nname = \"example-name\"\nversion = \"0.1.0\"\ndescription = \"example-name — dbt 2.0 project on DuckDB, scaffolded by guppy\"\nreadme = \"README.md\"\nrequires-python = \">=3.14\"\ndependencies = [\n    \"dbt>=2.0,<3\",\n    \"sqlfluff>=4.4\",\n    \"ruff>=0.17\",\n]\n"
+
+[[file]]
+  path = "requirements_lock.txt"
+  mode = "0644"
+  content = "# This file was autogenerated by uv via the following command:\n#    uv pip compile --python-version 3.14 pyproject.toml -o requirements_lock.txt\nchardet==7.6.0\n    # via\n    #   diff-cover\n    #   sqlfluff\nclick==8.4.2\n    # via sqlfluff\ncolorama==0.4.6\n    # via sqlfluff\ndbt==2.0.8\n    # via example-name (pyproject.toml)\ndiff-cover==10.6.0\n    # via sqlfluff\njinja2==3.1.6\n    # via\n    #   diff-cover\n    #   sqlfluff\nmarkupsafe==3.0.4\n    # via jinja2\nmashumaro==3.23\n    # via dbt\nmsgpack==1.2.3\n    # via mashumaro\npathspec==1.1.1\n    # via sqlfluff\nplatformdirs==4.13.0\n    # via sqlfluff\npluggy==1.6.0\n    # via diff-cover\npygments==2.21.0\n    # via diff-cover\npyyaml==6.0.3\n    # via sqlfluff\nregex==2026.9.29\n    # via sqlfluff\nruff==0.17.0\n    # via example-name (pyproject.toml)\nsqlfluff==4.4.0\n    # via example-name (pyproject.toml)\ntblib==3.2.2\n    # via sqlfluff\ntqdm==4.70.1\n    # via sqlfluff\ntyping-extensions==4.16.0\n    # via mashumaro\n"
+
+[[file]]
+  path = "tools/env/banner.sh"
+  mode = "0644"
+  content = "# tools/env/banner.sh — one-line environment banner on activation.\n# Suppressed with GUPPY_QUIET=1 (the same switch the CLI honors, §6).\nROOT=\"${GUPPY_ROOT:-$PWD}\"\nif [ \"${GUPPY_QUIET:-0}\" != \"1\" ]; then\n  log_status \"example-name: hermetic env active (bazel $(cat \"$ROOT/.bazelversion\" 2>/dev/null || echo unpinned)); gp shims in .direnv/bin\"\nfi\n\n"
+
+[[file]]
+  path = "tools/env/dbt.sh"
+  mode = "0644"
+  content = "# tools/env/dbt.sh — dbt wiring for example-name: profiles live in dbt/,\n# the local DuckDB database under data/ (created on first activation so\n# the profile's path always resolves — the dbt 2.0 engine needs an\n# absolute DBT_DUCKDB_PATH, which this exports). Sourced from .envrc;\n# idempotent, safe on every activation.\nROOT=\"${GUPPY_ROOT:-$PWD}\"\nexport DBT_PROFILES_DIR=\"$ROOT/dbt\"\nexport DBT_DUCKDB_PATH=\"$ROOT/data/example-name.duckdb\"\nmkdir -p \"$ROOT/data\"\n\n"
+
+[[file]]
+  path = "tools/env/setup.sh"
+  mode = "0644"
+  content = "# tools/env/setup.sh — activate the hermetic environment for example-name\n# (guppy environment contract, design §3.4). Sourced from .envrc by\n# direnv; idempotent, safe on every activation, and it never writes\n# outside the project tree.\nROOT=\"${GUPPY_ROOT:-$PWD}\"\n\nif ! has bazel; then\n  log_error \"bazel not found — install bazelisk: https://bazel.build/install/bazelisk\"\nfi\n\n# The shim dir: project-scoped shims live here, never on the global PATH.\n# The gp shim — the project face of guppy (§3.5) — is materialized on\n# every activation, so it always points at the currently installed\n# guppy and exists only while this project's environment is active.\nSHIM_DIR=\"$ROOT/.direnv/bin\"\nmkdir -p \"$SHIM_DIR\"\nif has guppy; then\n  ln -sfn \"$(command -v guppy)\" \"$SHIM_DIR/gp\"\nelse\n  log_status \"guppy not found — gp shim unavailable (fallback: guppy project <verb>)\"\nfi\nPATH_add \"$SHIM_DIR\"\n\n"
+
+[[file]]
+  path = "tools/ruff_main.py"
+  mode = "0644"
+  content = "\"\"\"Run ruff from the pip hub.\n\nruff ships its CLI as a wheel-installed binary (no console_scripts entry\npoint), so instead of `python -m ruff`'s sysconfig probing — which cannot\nsee Bazel runfiles — the binary is resolved relative to the package and\nexec'd directly. `@pypi//ruff:data` puts bin/ruff into the runfiles tree.\n\"\"\"\n\nimport os\nimport sys\n\nimport ruff\n\nruff_bin = os.path.join(\n    os.path.dirname(os.path.dirname(os.path.dirname(ruff.__file__))), \"bin\", \"ruff\"\n)\nos.execv(ruff_bin, [ruff_bin, *sys.argv[1:]])\n"

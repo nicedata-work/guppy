@@ -1,0 +1,9 @@
+{{ if .agents_md }}# AGENTS.md
+
+Guidance for agents and human contributors working in {{ .name }}.
+
+## Conventions
+
+- Build with Bazel; the dev environment is hermetic (pinned toolchains,
+  direnv-activated) — never install tools globally.
+{{ end }}

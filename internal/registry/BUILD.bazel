@@ -1,0 +1,25 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "registry",
+    srcs = [
+        "registry.go",
+        "source.go",
+        "tarball.go",
+    ],
+    importpath = "github.com/nicedata-work/guppy/internal/registry",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//internal/archive",
+        "//internal/httpx",
+        "//internal/templates",
+        "//internal/version",
+    ],
+)
+
+go_test(
+    name = "registry_test",
+    srcs = ["registry_test.go"],
+    embed = [":registry"],
+    deps = ["//internal/httpx"],
+)

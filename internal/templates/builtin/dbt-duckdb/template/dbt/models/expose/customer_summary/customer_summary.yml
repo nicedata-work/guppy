@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: customer_summary
+    description: >-
+      Placeholder expose-layer mart — one row per customer with a summary
+      attribute. Replace with analysis-ready logic over the model layer.
+    columns:
+      - name: customer_id
+        data_type: varchar
+        description: One row per customer
+        data_tests:
+          - unique
+          - not_null
+      - name: customer_name
+        data_type: varchar
+        description: Display name of the customer
+      - name: segment
+        data_type: varchar
+        description: Commercial segment of the customer
+      - name: order_count
+        data_type: bigint
+        description: Placeholder metric — replace with real logic

@@ -1,0 +1,29 @@
+load("@rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "doctor",
+    srcs = ["doctor.go"],
+    importpath = "github.com/nicedata-work/guppy/internal/doctor",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//internal/manifest",
+        "//internal/project",
+        "//internal/render",
+        "//internal/scaffold",
+        "//internal/templates",
+        "//internal/version",
+    ],
+)
+
+go_test(
+    name = "doctor_test",
+    srcs = ["doctor_test.go"],
+    deps = [
+        ":doctor",
+        "//internal/project",
+        "//internal/render",
+        "//internal/scaffold",
+        "//internal/templates",
+        "@tools_gotest_v3//assert",
+    ],
+)

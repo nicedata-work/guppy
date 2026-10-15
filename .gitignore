@@ -1,0 +1,15 @@
+# Bazel
+/bazel-*
+.bazelrc.local
+
+# Release artifacts
+/dist/
+
+# Go
+/vendor/
+
+# direnv
+/.direnv/
+
+# local scratch
+/bin/

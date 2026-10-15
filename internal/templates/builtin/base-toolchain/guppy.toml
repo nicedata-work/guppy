@@ -1,0 +1,20 @@
+id          = "base-toolchain"
+version     = "0.2.0"
+kind        = "infra"
+language    = "none"
+description = "Project base: hermetic Bazel + direnv environment contract, contextual git ignores, README, AGENTS.md — the skeleton every first-party template extends"
+
+[vars]
+name = { prompt = "Project name" }
+
+[defaults]
+git       = true
+bazel     = true
+direnv    = true
+agents_md = true
+
+# The env-contract workflow verbs (§3.5); `lint` is added by language
+# templates that bring an actual linter.
+[gp]
+build = { command = "bazel build //...", requires = ["bazel"] }
+test  = { command = "bazel test //...", requires = ["bazel"] }
