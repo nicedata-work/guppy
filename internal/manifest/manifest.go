@@ -102,7 +102,7 @@ func (in Includes) isZero() bool { return len(in.Include) == 0 && len(in.Exclude
 // design §2.2); schema validation errors are a lint concern (validate.go).
 func Parse(data []byte) (Manifest, []string, error) {
 	var m Manifest
-	md, err := toml.DecodeReader(bytes.NewReader(data), &m)
+	md, err := toml.NewDecoder(bytes.NewReader(data)).Decode(&m)
 	if err != nil {
 		return Manifest{}, nil, err
 	}

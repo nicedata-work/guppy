@@ -32,7 +32,7 @@ var caseNamePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*$`)
 // without a stable name has nowhere to live.
 func ParseTestSpec(data []byte) (TestSpec, []string, error) {
 	var spec TestSpec
-	md, err := toml.DecodeReader(bytes.NewReader(data), &spec)
+	md, err := toml.NewDecoder(bytes.NewReader(data)).Decode(&spec)
 	if err != nil {
 		return TestSpec{}, nil, err
 	}

@@ -52,15 +52,13 @@ func Load(fsys fs.FS, opts LoadOptions) (Template, []manifest.Issue, error) {
 	version := semver.Version{}
 	if v, err := semver.StrictNewVersion(m.Version); err == nil {
 		version = *v
-	} else {
-
 	}
 
-	payload := fs.FS(fsys)
 	var info fs.FileInfo
 	if st, err := fs.Stat(fsys, PayloadDir); err == nil && st.IsDir() {
 		info = st
 	}
+	var payload fs.FS
 	if info != nil {
 		sub, err := fs.Sub(fsys, PayloadDir)
 		if err != nil {

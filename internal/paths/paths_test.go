@@ -59,9 +59,8 @@ func TestLayoutPaths(t *testing.T) {
 
 func TestResolveFallsBackToHome(t *testing.T) {
 
-	l := Layout{}
 	home := t.TempDir()
-	l = Layout{
+	l := Layout{
 		ConfigHome: firstNonEmpty("", homeJoin(home, ".config")),
 		DataHome:   firstNonEmpty("", homeJoin(home, ".local", "share")),
 	}
