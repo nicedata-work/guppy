@@ -57,6 +57,14 @@ func ReadTar(r io.Reader) ([]File, error) {
 		if path.IsAbs(name) || name == ".." || strings.HasPrefix(name, "../") {
 			return nil, fmt.Errorf("archive entry escapes root: %q", h.Name)
 		}
+		// Backslashes are ordinary bytes on POSIX but path separators on
+		// Windows: a name like `..\evil` passes every `/`-semantics check
+		// above yet means traversal once a Windows consumer joins it.
+		// Refuse at the gate (untrusted registry tarballs flow through
+		// here) so the meaning of an accepted archive is OS-independent.
+		if strings.Contains(name, `\`) {
+			return nil, fmt.Errorf("archive entry contains a backslash: %q", h.Name)
+		}
 		switch h.Typeflag {
 		case tar.TypeDir:
 			continue
@@ -173,6 +181,9 @@ func WriteTarGz(files []File) ([]byte, error) {
 		rel := path.Clean(f.Rel)
 		if rel == "." || strings.HasPrefix(rel, "../") || path.IsAbs(f.Rel) {
 			return nil, fmt.Errorf("archive entry escapes root: %q", f.Rel)
+		}
+		if strings.Contains(rel, `\`) {
+			return nil, fmt.Errorf("archive entry contains a backslash: %q", f.Rel)
 		}
 	}
 	var buf bytes.Buffer

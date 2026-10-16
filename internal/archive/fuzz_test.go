@@ -16,6 +16,11 @@ func FuzzReadTarGz(f *testing.F) {
 	f.Add([]byte{})
 	f.Add(makeTarGz(f, tarEntry{name: "../escape.txt", body: "x"}))
 	f.Add(makeTarGz(f, tarEntry{name: "/abs.txt", body: "x"}))
+	// Regression: backslashes are POSIX filename bytes but Windows path
+	// separators — `..\\evil` slips past every "/"-semantics check yet
+	// means traversal on a Windows consumer (found by fuzzing).
+	f.Add(makeTarGz(f, tarEntry{name: `..\evil.txt`, body: "x"}))
+	f.Add(makeTarGz(f, tarEntry{name: `wrat\\\]plate/a.txt`, body: "x"}))
 	f.Fuzz(func(t *testing.T, data []byte) {
 		files, err := ReadTarGz(data)
 		if err != nil {

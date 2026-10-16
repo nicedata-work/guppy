@@ -73,7 +73,7 @@ func TestReadTarGzRoundTrip(t *testing.T) {
 }
 
 func TestReadTarGzRefusesTraversal(t *testing.T) {
-	for _, name := range []string{"../evil", "/abs/evil", "a/../../evil"} {
+	for _, name := range []string{"../evil", "/abs/evil", "a/../../evil", `..\evil`, `a\..\..\evil`, `wrat\\\]plate/a.txt`} {
 		data := makeTarGz(t, tarEntry{name: name, body: "boom"})
 		if _, err := ReadTarGz(data); err == nil {
 			t.Errorf("entry %q: expected error, got nil", name)
