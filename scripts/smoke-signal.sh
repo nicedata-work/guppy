@@ -42,7 +42,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 echo "== install guppy =="
 install -m 0755 /src/guppy /usr/local/bin/guppy
-ln -sf /usr/local/bin/guppy /usr/local/bin/gp
+ln -sf /usr/local/bin/guppy /usr/local/bin/gup
 export HOME=/root
 cd /app 2>/dev/null || { mkdir -p /app && cd /app; }
 
@@ -51,11 +51,11 @@ echo "== scaffold a project and add a deliberately slow verb =="
 # pinned environment — keep the runner selection deterministic.
 guppy new widget --template go-cli --var name=widget --no-git --no-direnv
 cd widget
-sed -i "/^\[gp\]$/a\\  slow = \"sleep 60\"" .guppy/project.toml
+sed -i "/^\[gup\]$/a\\  slow = \"sleep 60\"" .guppy/project.toml
 grep -q "slow" .guppy/project.toml
 
 echo "== SIGINT to a running verb: exit 130, child killed =="
-gp slow 2>interrupt.err &
+gup slow 2>interrupt.err &
 pid=$!
 sleep 1
 kill -INT "$pid"
@@ -68,7 +68,7 @@ grep -q "interrupted" interrupt.err
 rm -f interrupt.err
 
 echo "== SIGTERM to a running verb: exit 130 =="
-gp slow 2>interrupt.err &
+gup slow 2>interrupt.err &
 pid=$!
 sleep 1
 kill -TERM "$pid"

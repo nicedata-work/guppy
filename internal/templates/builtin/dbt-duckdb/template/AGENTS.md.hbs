@@ -10,8 +10,8 @@ Guidance for agents and human contributors working in {{ .name }}.
   layout: `models/model/` (core models → schema `model`), `models/expose/`
   (analysis-ready marts → schema `expose`), `models/semantic/` (governed
   views → schema `semantic`).
-- Run dbt through the project verbs (`gp dbt build`, `gp dbt test`) so the
+- Run dbt through the project verbs (`gup dbt build`, `gup dbt test`) so the
   Bazel-pinned engine is used; never install dbt globally.
-- SQL style is enforced by sqlfluff and Python by ruff (`gp lint` /
-  `gp format`); keep both green before committing.
+- SQL style is enforced by sqlfluff and Python by ruff (`gup lint` /
+  `gup format`); keep both green before committing.
 {{ end }}

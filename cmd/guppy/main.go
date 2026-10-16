@@ -1,6 +1,6 @@
 // Command guppy is the CLI for scaffolding projects from templates
 // (https://nicedata.work/guppy). One binary, two faces: `guppy` is the
-// global management CLI; `guppy project` (shimmed as `gp`) is the
+// global management CLI; `guppy project` (shimmed as `gup`) is the
 // project-scoped face.
 package main
 

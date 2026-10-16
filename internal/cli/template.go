@@ -101,11 +101,11 @@ func showTemplate(out io.Writer, lt loadedTemplate, contents bool) error {
 	}
 
 	_, _ = fmt.Fprintln(out, "verbs:")
-	if len(t.Manifest.GP) == 0 {
+	if len(t.Manifest.GUP) == 0 {
 		_, _ = fmt.Fprintln(out, "  (none)")
 	} else {
-		for _, verb := range sortedKeys(t.Manifest.GP) {
-			entry := t.Manifest.GP[verb]
+		for _, verb := range sortedKeys(t.Manifest.GUP) {
+			entry := t.Manifest.GUP[verb]
 			line := fmt.Sprintf("  %-6s %s", verb, entry.Command)
 			if len(entry.Requires) > 0 {
 				line += fmt.Sprintf("  (requires: %s)", strings.Join(manifest.AxisNames(entry.Requires), ", "))

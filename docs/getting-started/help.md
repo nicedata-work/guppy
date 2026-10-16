@@ -19,7 +19,7 @@ the bug plus the command that fails is usually enough.
 ## Common problems
 
 Many issues have known fixes — see
-[Troubleshooting](../reference/troubleshooting.md) first: `gp` not found,
+[Troubleshooting](../reference/troubleshooting.md) first: `gup` not found,
 ambiguous templates, trust-gate prompts in CI, stale index entries, and
 offline use are all covered there.
 

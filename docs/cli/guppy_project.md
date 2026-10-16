@@ -3,14 +3,14 @@
 ## Synopsis
 
 Create and manage projects, and run project verbs — the project-scoped
-face of guppy, shimmed as "gp".
+face of guppy, shimmed as "gup".
 
 Built-in subcommands cover the project lifecycle: new, list, jump, and
 clear. Inside a guppy-managed project, any other verb dispatches
-through that project's [gp] command map (.guppy/project.toml), walking
+through that project's [gup] command map (.guppy/project.toml), walking
 up to the nearest marker first. Built-in names shadow map verbs: a
 project defining its own "list" verb must invoke it as
-gp's explicit fallback or rename it.
+gup's explicit fallback or rename it.
 
 Map verbs execute from the project root through direnv when the
 project is direnv-wired (the pinned toolchain environment); without
@@ -29,7 +29,7 @@ guppy project [VERB] [ARGS...]
 ```
 guppy project new dbt-project --template dbt-v2
   guppy project list
-  gp build            # inside a project (direnv shim)
+  gup build            # inside a project (direnv shim)
   guppy project test  # the explicit fallback, works without direnv
   guppy --directory path/to/proj project lint
 ```
@@ -38,11 +38,9 @@ guppy project new dbt-project --template dbt-v2
 
 | Flag | Description |
 |------|-------------|
-| --color (default auto) | color output: auto, always, never |
 | --config | path to guppy.toml settings file |
 | --directory | run as if started in this directory |
 | --interactive | enable interactive prompts |
-| --no-progress | disable progress output |
 | --offline | disable all network access |
 | -q, --quiet | only print errors |
 | -v, --verbose | increase output verbosity |

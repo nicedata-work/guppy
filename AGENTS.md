@@ -7,8 +7,8 @@ with **Bazel**.
 ## Commands
 
 All development goes through Bazel (hermetic, pinned via `.bazelversion`
-and `.nvmrc`). With direnv hooked up (`direnv allow`), `gp build`, `gp
-test`, and `gp lint` run the same commands contextually.
+and `.nvmrc`). With direnv hooked up (`direnv allow`), `gup build`, `gup
+test`, and `gup lint` run the same commands contextually.
 
 ```sh
 bazel build //...                        # build everything
@@ -33,7 +33,7 @@ internal/             all implementation packages:
   templates/          template identity, sources, scope resolution
   scaffold/           file materialization (never-clobber, rollback)
   registry/ dist/     registry client, source pinning, archives
-  project/ catalog/   project mode (gp), the global project index
+  project/ catalog/   project mode (gup), the global project index
   doctor/ settings/   project audit, user settings
   selfmanage/         guppy update / uninstall
   archive/ fileutil/ httpx/ paths/ diffutil/ version/   support packages

@@ -8,6 +8,11 @@
 // The hook is a stub on the hot path: one directory comparison per
 // prompt, one append when entering a managed project. It never invokes
 // guppy; guppy folds the seen-log into index.toml on the next read.
+//
+// Hidden from help and the generated reference: the hook is installed
+// by the installer / `guppy uninstall` counterpart, not something users
+// need to discover in the verb list. It stays fully functional (the
+// alias and both invocation forms keep working).
 package cli
 
 import (
@@ -40,7 +45,8 @@ a guppy-managed project — it never invokes guppy, so it cannot slow
 down or break your shell. Guppy folds its observations into
 index.toml whenever a command reads the index (guppy project list,
 doctor).`,
-		Args: cobra.MaximumNArgs(1),
+		Args:   cobra.MaximumNArgs(1),
+		Hidden: true,
 		Example: `  eval "$(guppy shell-env zsh)"
   guppy shell-env bash --install`,
 		RunE: func(_ *cobra.Command, args []string) error {

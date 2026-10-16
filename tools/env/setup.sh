@@ -9,7 +9,7 @@ if ! has bazel; then
 fi
 
 # The shim dir: project-scoped shims live here, never on the global PATH.
-# The gp shim — the project face of guppy (§3.5) — is materialized on
+# The gup shim — the project face of guppy (§3.5) — is materialized on
 # every activation, so it always points at the guppy that `command -v`
 # finds here (the fresh build, when one exists) and exists only while
 # this project's environment is active.
@@ -18,7 +18,7 @@ mkdir -p "$SHIM_DIR"
 PATH_add "$SHIM_DIR"
 
 # The build output dir is added last, so it sits *before* everything else
-# on PATH: inside this repo `guppy` and `gp` resolve to the binary
+# on PATH: inside this repo `guppy` and `gup` resolve to the binary
 # `bazel build //...` produced — no copy/install step. The dir only
 # exists after a build; without one the entry is skipped and the
 # installed guppy wins as before.
@@ -28,9 +28,9 @@ if [ -d "$BUILD_BIN_DIR" ]; then
 fi
 
 if has guppy; then
-  ln -sfn "$(command -v guppy)" "$SHIM_DIR/gp"
+  ln -sfn "$(command -v guppy)" "$SHIM_DIR/gup"
 else
-  log_status "guppy not found — gp shim unavailable (fallback: guppy project <verb>)"
+  log_status "guppy not found — gup shim unavailable (fallback: guppy project <verb>)"
 fi
 
 export GUPPY_REPO_ROOT="$ROOT"

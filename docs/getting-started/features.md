@@ -23,11 +23,11 @@ files in its own tree. See the
 
 ## One binary, two faces
 
-`guppy` manages templates and configuration globally; `gp` (`guppy project`)
+`guppy` manages templates and configuration globally; `gup` (`guppy project`)
 runs a project's own verbs — `build`, `test`, `lint`, `doctor` — dispatched
 through the project's `.guppy/project.toml` command map, executed through
 the project's pinned environment. Templates can add verbs beyond the
-baseline four (`gp dev`, `gp deploy`).
+baseline four (`gup dev`, `gup deploy`).
 
 ## Declarative, extendable templates
 

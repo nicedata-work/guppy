@@ -52,7 +52,7 @@ linters    = true
 tests      = true
 agents_md  = true
 
-[gp]                                  # resolved into .guppy/project.toml
+[gup]                                  # resolved into .guppy/project.toml
 build = { command = "bazel build //...", requires = ["bazel"] }
 test  = { command = "bazel test //...", requires = ["bazel", "tests"] }
 lint  = "bazel run //:gazelle -- -mode=diff"
@@ -66,7 +66,7 @@ Validation rules are enforced by `guppy dev lint` — errors refuse a scaffold,
 warnings do not. Notables: `id`/`version`/`kind`/`language` must be present
 and well-formed (**error**); a `[vars]` var referenced in the payload but
 not declared is an **error** (the strict allow-list — undeclared `{{ .X }}`
-is never silently empty); `[gp]` verbs must be well-formed and may not
+is never silently empty); `[gup]` verbs must be well-formed and may not
 shadow the built-in `doctor`.
 
 ## Variable substitution

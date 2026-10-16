@@ -1,11 +1,11 @@
 // `guppy project` — the project-scoped face of the CLI (design §3.5),
-// shimmed as `gp`: walk up to the nearest .guppy/project.toml, refuse to
-// run outside one, and dispatch the verb through the marker's [gp] command
+// shimmed as `gup`: walk up to the nearest .guppy/project.toml, refuse to
+// run outside one, and dispatch the verb through the marker's [gup] command
 // map. Verbs run through direnv when the project is direnv-wired (the
 // pinned toolchain environment, §3.4) and directly otherwise — the
 // explicit fallback that must keep working without direnv (design §3.5).
 //
-// Flag parsing is pass-through after the verb (`gp test --test_filter=…`
+// Flag parsing is pass-through after the verb (`gup test --test_filter=…`
 // reaches bazel intact); global flags stay usable before it.
 package cli
 
@@ -26,16 +26,16 @@ import (
 func newProjectCmd(rt *runtime, out *output, p *prompter) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "project [VERB] [ARGS...]",
-		Short: "Create and manage projects (shimmed as gp)",
+		Short: "Create and manage projects (shimmed as gup)",
 		Long: `Create and manage projects, and run project verbs — the project-scoped
-face of guppy, shimmed as "gp".
+face of guppy, shimmed as "gup".
 
 Built-in subcommands cover the project lifecycle: new, list, jump, and
 clear. Inside a guppy-managed project, any other verb dispatches
-through that project's [gp] command map (.guppy/project.toml), walking
+through that project's [gup] command map (.guppy/project.toml), walking
 up to the nearest marker first. Built-in names shadow map verbs: a
 project defining its own "list" verb must invoke it as
-gp's explicit fallback or rename it.
+gup's explicit fallback or rename it.
 
 Map verbs execute from the project root through direnv when the
 project is direnv-wired (the pinned toolchain environment); without
@@ -46,7 +46,7 @@ version hermeticity. An unknown verb prints the resolved command map.
 		ValidArgsFunction: nil,
 		Example: `  guppy project new dbt-project --template dbt-v2
   guppy project list
-  gp build            # inside a project (direnv shim)
+  gup build            # inside a project (direnv shim)
   guppy project test  # the explicit fallback, works without direnv
   guppy --directory path/to/proj project lint`,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -78,7 +78,7 @@ func runProject(ctx context.Context, rt *runtime, out *output, p *prompter, args
 	if len(args) == 0 || isHelpArg(args[0]) {
 		_, _ = fmt.Fprintf(out.stdout, "guppy-managed project: %s (template %s@%s)\n",
 			root, marker.Project.Template, marker.Project.Version)
-		_, _ = fmt.Fprintf(out.stdout, "verbs:\n%s", project.FormatMap(marker.GP))
+		_, _ = fmt.Fprintf(out.stdout, "verbs:\n%s", project.FormatMap(marker.GUP))
 		_, _ = fmt.Fprintf(out.stdout, "  doctor  audit this project (built in)\n")
 		return nil
 	}
@@ -90,10 +90,10 @@ func runProject(ctx context.Context, rt *runtime, out *output, p *prompter, args
 
 		return runDoctorAt(ctx, rt, out, root, marker, slices.Contains(args[1:], "--fix"))
 	}
-	command, ok := marker.GP[verb]
+	command, ok := marker.GUP[verb]
 	if !ok {
 		return InputError(fmt.Errorf("unknown verb %q for this project — verbs:\n%s  doctor  (built in)",
-			verb, project.FormatMap(marker.GP)))
+			verb, project.FormatMap(marker.GUP)))
 	}
 
 	direnvPath, _ := exec.LookPath("direnv")
@@ -146,7 +146,7 @@ func warnMisplacedGlobals(out *output, args []string) {
 			continue
 		}
 		seen[name] = true
-		out.warnf("%s reached the verb, not guppy — put global flags before the verb (gp %s <verb>)", "--"+name, "--"+name)
+		out.warnf("%s reached the verb, not guppy — put global flags before the verb (gup %s <verb>)", "--"+name, "--"+name)
 	}
 }
 
@@ -170,23 +170,23 @@ func passthroughGlobalFlag(arg string) (string, bool) {
 	return "", false
 }
 
-// InvokedAsGP reports whether the binary was invoked under the `gp` name
+// InvokedAsGUP reports whether the binary was invoked under the `gup` name
 // (design §3.5: one binary, two faces — argv[0] selects the face). The
-// direnv setup links `gp` into .direnv/bin/, so the shim is ambient
+// direnv setup links `gup` into .direnv/bin/, so the shim is ambient
 // inside a project and absent outside one.
-func InvokedAsGP(argv0 string) bool {
+func InvokedAsGUP(argv0 string) bool {
 	base := argv0
 	if i := strings.LastIndexAny(base, `/\\`); i >= 0 {
 		base = base[i+1:]
 	}
 	base = strings.TrimSuffix(base, ".exe")
-	return base == "gp"
+	return base == "gup"
 }
 
-// ArgsFor maps an invocation to CLI args: as `gp` the binary is guppy in
+// ArgsFor maps an invocation to CLI args: as `gup` the binary is guppy in
 // project mode (design §3.5).
 func ArgsFor(argv0 string, args []string) []string {
-	if InvokedAsGP(argv0) {
+	if InvokedAsGUP(argv0) {
 		return append([]string{"project"}, args...)
 	}
 	return args

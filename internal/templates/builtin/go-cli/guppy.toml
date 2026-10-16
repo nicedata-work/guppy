@@ -17,5 +17,5 @@ tests   = true
 
 # `lint` is the hermetic gazelle drift check; build/test come from
 # base-toolchain.
-[gp]
+[gup]
 lint = { command = "bazel run //:gazelle -- -mode=diff", requires = ["bazel", "linters"] }

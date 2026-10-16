@@ -13,7 +13,7 @@ name = { prompt = "Repository name" }
 [defaults]
 git = true
 
-[gp]
+[gup]
 build = "python3 scripts/build-registry.py"
 test  = "bash scripts/validate-templates.sh"
 lint  = "python3 scripts/build-registry.py --check"

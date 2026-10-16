@@ -19,19 +19,19 @@ type VarSpec struct {
 	Default string `toml:"default"`
 }
 
-// GPCommand is one entry of the [gp] command map (§3.5): the shell
+// GUPCommand is one entry of the [gup] command map (§3.5): the shell
 // command line a scaffolded project runs for a verb. TOML value is either
 // a bare string (the command) or a table { command, requires } where
 // requires lists the [defaults] axes the verb depends on — a verb whose
 // required axis is off at scaffold time is dropped from the resolved
 // project's map (e.g. `--no-bazel` yields no `bazel build` verb).
-type GPCommand struct {
+type GUPCommand struct {
 	Command  string
 	Requires []Axis
 }
 
-// UnmarshalTOML decodes the string-or-table union of a [gp] entry.
-func (c *GPCommand) UnmarshalTOML(v any) error {
+// UnmarshalTOML decodes the string-or-table union of a [gup] entry.
+func (c *GUPCommand) UnmarshalTOML(v any) error {
 	switch val := v.(type) {
 	case string:
 		c.Command = val
@@ -64,7 +64,7 @@ func (c *GPCommand) UnmarshalTOML(v any) error {
 		}
 		return nil
 	default:
-		return fmt.Errorf("gp entry must be a command string or { command, requires }")
+		return fmt.Errorf("gup entry must be a command string or { command, requires }")
 	}
 }
 
@@ -82,7 +82,7 @@ type Manifest struct {
 	Defaults    map[Axis]bool      `toml:"defaults"`
 	Includes    Includes           `toml:"includes"`
 
-	GP map[string]GPCommand `toml:"gp"`
+	GUP map[string]GUPCommand `toml:"gup"`
 }
 
 // Includes narrows the payload file set (pi's "filters narrow, never

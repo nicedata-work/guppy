@@ -58,7 +58,7 @@ linters    = true
 tests      = true
 agents_md  = true
 
-[gp]                                  # verbs resolved into .guppy/project.toml
+[gup]                                  # verbs resolved into .guppy/project.toml
 build = { command = "bazel build //...", requires = ["bazel"] }
 test  = { command = "bazel test //...", requires = ["bazel", "tests"] }
 lint  = "bazel run //:gazelle -- -mode=diff"   # bare string = no requirements
@@ -76,7 +76,7 @@ Validation (`guppy dev lint`) splits errors from warnings:
 | `extends` unresolvable in the scope chain | error |
 | payload references an undeclared var | error |
 | payload gates on an undeclared toggle | error |
-| `[gp]` verb name malformed / reserved (`doctor`) / empty command / unknown `requires` axis | error |
+| `[gup]` verb name malformed / reserved (`doctor`) / empty command / unknown `requires` axis | error |
 | declared var never used | warning |
 | missing baseline verb (build/test; + lint for language templates) | warning |
 | shadow-crossing a trust boundary in `extends` | warning |
@@ -118,11 +118,11 @@ and re-prompt its vars but can only narrow, never expand. Chains resolve
 depth-first with cycle detection (lint error). `guppy template show <id>`
 prints the merged view, so inheritance is never invisible.
 
-## The project contract: `[gp]`
+## The project contract: `[gup]`
 
-The verbs you declare become `.guppy/project.toml`'s `[gp]` map, and with
-it the project face of the CLI (`gp build`, `gp test`, `gp lint`,
-`gp doctor` — doctor is built in and reserved). Entries whose `requires`
+The verbs you declare become `.guppy/project.toml`'s `[gup]` map, and with
+it the project face of the CLI (`gup build`, `gup test`, `gup lint`,
+`gup doctor` — doctor is built in and reserved). Entries whose `requires`
 axes are off at scaffold time are dropped (`--no-bazel` yields no
 `bazel build` verb). Commands may use the same strict var allow-list
 (`{{ .module_path }}`); an undeclared var is a scaffold error.

@@ -38,8 +38,8 @@ func TestMarkerRoundTrip(t *testing.T) {
 	if len(m.Project.Chain) != 2 || m.Project.Chain[0] != "base-toolchain@0.2.0" {
 		t.Errorf("chain = %v", m.Project.Chain)
 	}
-	if m.Vars["name"] != "widget" || m.GP["test"] != "bazel test //..." {
-		t.Errorf("vars/verbs = %v / %v", m.Vars, m.GP)
+	if m.Vars["name"] != "widget" || m.GUP["test"] != "bazel test //..." {
+		t.Errorf("vars/verbs = %v / %v", m.Vars, m.GUP)
 	}
 }
 
@@ -120,7 +120,7 @@ func TestFindUp(t *testing.T) {
 }
 
 func TestResolveVerbs(t *testing.T) {
-	gp := map[string]manifest.GPCommand{
+	gup := map[string]manifest.GUPCommand{
 		"build": {Command: "bazel build //...", Requires: []manifest.Axis{"bazel"}},
 		"test":  {Command: "bazel test //...", Requires: []manifest.Axis{"bazel", "tests"}},
 		"lint":  {Command: "runlint {{ .name }}"},
@@ -128,7 +128,7 @@ func TestResolveVerbs(t *testing.T) {
 	vars := render.Vars{"name": "widget"}
 	all := render.Toggles{"bazel": true, "tests": true}
 
-	got, err := ResolveVerbs(gp, all, vars)
+	got, err := ResolveVerbs(gup, all, vars)
 	if err != nil {
 		t.Fatalf("ResolveVerbs: %v", err)
 	}
@@ -137,7 +137,7 @@ func TestResolveVerbs(t *testing.T) {
 	}
 
 	noTests := render.Toggles{"bazel": true, "tests": false}
-	got, err = ResolveVerbs(gp, noTests, vars)
+	got, err = ResolveVerbs(gup, noTests, vars)
 	if err != nil {
 		t.Fatalf("ResolveVerbs: %v", err)
 	}
@@ -148,7 +148,7 @@ func TestResolveVerbs(t *testing.T) {
 		t.Errorf("build verb should survive: %v", got)
 	}
 
-	_, err = ResolveVerbs(map[string]manifest.GPCommand{"x": {Command: "{{ .nope }}"}}, all, vars)
+	_, err = ResolveVerbs(map[string]manifest.GUPCommand{"x": {Command: "{{ .nope }}"}}, all, vars)
 	if err == nil || !strings.Contains(err.Error(), "declared in [vars]") {
 		t.Errorf("error = %v, want undeclared-var explanation", err)
 	}

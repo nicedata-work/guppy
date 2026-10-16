@@ -1,4 +1,4 @@
-// Verb execution for `guppy project <verb>` / `gp` (§3.5): dispatch runs
+// Verb execution for `guppy project <verb>` / `gup` (§3.5): dispatch runs
 // the verb's command line from the project root, through direnv when the
 // project is direnv-wired (the pinned environment — design §3.4), and
 // directly when it is not. The fallback is a contract, not a degraded
@@ -57,7 +57,7 @@ func EnvrcExists(root string) bool {
 }
 
 // Shell is the interpreter verb command lines run under (POSIX sh: the
-// [gp] map holds shell command lines, §3.5).
+// [gup] map holds shell command lines, §3.5).
 const Shell = "sh"
 
 // RunOptions carries the per-invocation execution state into Run.
@@ -75,7 +75,7 @@ type RunOptions struct {
 }
 
 // Run executes the verb command line and returns the child's exit code
-// (0 on success). The command inherits stdio — `gp test` streams bazel's
+// (0 on success). The command inherits stdio — `gup test` streams bazel's
 // output like running it by hand. Cancellation (SIGINT/SIGTERM via the
 // CLI's signal-aware ctx) kills the child and surfaces as an error
 // wrapping context.Canceled so the CLI can exit 130.
@@ -117,7 +117,7 @@ func argv(mode Mode, direnv, root, cmdline string) []string {
 }
 
 // withArgs appends pass-through args to a shell command line, each shell-
-// quoted so `gp test --test_filter='a b'` reaches the verb intact.
+// quoted so `gup test --test_filter='a b'` reaches the verb intact.
 func withArgs(command string, args []string) string {
 	if len(args) == 0 {
 		return command

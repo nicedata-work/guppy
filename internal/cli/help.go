@@ -1,8 +1,9 @@
 // Coloured help rendering (ADR 0009 update). Cobra's default help is
 // plain text; this replaces the help/usage funcs with a painter-driven
 // renderer covering every section: usage line, aliases, examples,
-// available commands, and flag blocks. Same layout as cobra's default,
-// same decoration contract as the rest of the CLI — colours vanish
+// available commands (grouped on the root, per rootHelpGroups), and
+// flag blocks. Otherwise same layout as cobra's default, same
+// decoration contract as the rest of the CLI — colours vanish
 // under --color never / NO_COLOR / non-TTY, so piping help stays
 // byte-stable.
 package cli
@@ -46,6 +47,13 @@ func (o *output) writeHelp(c *cobra.Command, out io.Writer) {
 // writeUsageTo renders cobra's usage body: usage line, aliases,
 // examples, available commands, flag blocks, subcommand footer.
 func (o *output) writeUsageTo(c *cobra.Command, out io.Writer, p painter) {
+	// Flags print in registration order (the curated order from the
+	// global flag table), not pflag's lexical order.
+	c.Flags().SortFlags = false
+	if c.HasAvailableInheritedFlags() {
+		c.InheritedFlags().SortFlags = false
+	}
+
 	_, _ = fmt.Fprintf(out, "%s\n", p.paint(bold, "Usage:"))
 
 	if c.Runnable() {
@@ -66,11 +74,14 @@ func (o *output) writeUsageTo(c *cobra.Command, out io.Writer, p painter) {
 
 	if c.HasAvailableSubCommands() {
 		_, _ = fmt.Fprintf(out, "\n%s\n", p.paint(bold, "Available Commands:"))
-		for _, sub := range c.Commands() {
-			if !sub.IsAvailableCommand() && sub.Name() != "help" {
-				continue
+		pad := c.NamePadding()
+		for i, group := range helpCommandGroups(c) {
+			if i > 0 {
+				_, _ = fmt.Fprintln(out)
 			}
-			_, _ = fmt.Fprintf(out, "  %s %s\n", p.paint(cyan, padTo(sub.Name(), c.NamePadding())), sub.Short)
+			for _, sub := range group {
+				_, _ = fmt.Fprintf(out, "  %s %s\n", p.paint(cyan, padTo(sub.Name(), pad)), sub.Short)
+			}
 		}
 	}
 
@@ -87,6 +98,42 @@ func (o *output) writeUsageTo(c *cobra.Command, out io.Writer, p painter) {
 		_, _ = fmt.Fprintf(out, "\n%s\n", p.paint(dim,
 			fmt.Sprintf("Use \"%s [command] --help\" for more information about a command.", c.CommandPath())))
 	}
+}
+
+// helpCommandGroups splits the displayed subcommands into the groups the
+// help page prints. The root uses the curated layout in rootHelpGroups
+// (order + blank-line separation); every other command lists its
+// available subcommands as a single group in cobra's own (name-sorted)
+// order.
+func helpCommandGroups(c *cobra.Command) [][]*cobra.Command {
+	subs := c.Commands()
+	if !c.HasParent() {
+		var groups [][]*cobra.Command
+		for _, names := range rootHelpGroups {
+			var group []*cobra.Command
+			for _, name := range names {
+				for _, sub := range subs {
+					if sub.Name() == name && (sub.IsAvailableCommand() || sub.Name() == "help") {
+						group = append(group, sub)
+					}
+				}
+			}
+			if len(group) > 0 {
+				groups = append(groups, group)
+			}
+		}
+		if len(groups) > 0 {
+			return groups
+		}
+	}
+	var group []*cobra.Command
+	for _, sub := range subs {
+		if !sub.IsAvailableCommand() && sub.Name() != "help" {
+			continue
+		}
+		group = append(group, sub)
+	}
+	return [][]*cobra.Command{group}
 }
 
 // paintUseLine renders the usage line: command-path words bold, place-

@@ -1,5 +1,5 @@
 // Package project is the project-scoped face of the CLI (design §3.5):
-// `guppy project <verb>`, shimmed as `gp`, dispatched via the [gp] command
+// `guppy project <verb>`, shimmed as `gup`, dispatched via the [gup] command
 // map in .guppy/project.toml. Discovery (marker.go) and verb execution
 // (runner.go).
 package project
@@ -7,7 +7,7 @@ package project
 // Command is one shell command line the project runs for a verb.
 type Command string
 
-// VerbMap is the [gp] command map from .guppy/project.toml: verb name →
+// VerbMap is the [gup] command map from .guppy/project.toml: verb name →
 // command line. Templates write it at scaffold time; doctor is native and
 // never appears here.
 type VerbMap map[string]Command

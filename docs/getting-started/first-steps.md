@@ -10,7 +10,7 @@ guppy shell-env
 ```
 
 This emits a shellhook (zsh/bash) — a one-line `eval` in your rc file. The
-hook keeps the global project index fresh on `cd` and makes `gp` available
+hook keeps the global project index fresh on `cd` and makes `gup` available
 contextually inside managed projects. The hook is pure shell: it never
 invokes guppy on the hot path, and if it fails your shell is unaffected —
 the index just goes stale until the next fold.
@@ -39,19 +39,19 @@ What lands in the directory:
 - `.envrc` + `tools/env/` — the direnv wiring that makes the environment
   hermetic (see the [environment contract](../concepts/template-model.md#the-environment-contract))
 - `.guppy/project.toml` — the project marker recording template identity,
-  vars, toggles, and the `[gp]` command map
+  vars, toggles, and the `[gup]` command map
 
 ## 3. Work on the project
 
 ```sh
 $ cd data-handbook
-$ gp build          # the project's build targets, via its pinned Bazel
-$ gp test
-$ gp lint
-$ gp doctor         # audit against the template; --fix applies the safe subset
+$ gup build          # the project's build targets, via its pinned Bazel
+$ gup test
+$ gup lint
+$ gup doctor         # audit against the template; --fix applies the safe subset
 ```
 
-`gp` is `guppy project` shimmed into `.direnv/bin/` — `cd` in and it is on
+`gup` is `guppy project` shimmed into `.direnv/bin/` — `cd` in and it is on
 PATH; `cd` out and it is gone, exactly like the nix-shell experience. If
 direnv is not hooked up, `guppy project <verb>` works from anywhere.
 
@@ -67,5 +67,5 @@ guppy template search web       # search the registry index
 
 - [Creating projects](../guides/creating-projects.md) — `guppy new` flags in depth
 - [Using templates](../guides/using-templates.md) — sources, community templates, trust
-- [Working on projects](../guides/gp-workflows.md) — the `gp` verb set
+- [Working on projects](../guides/gup-workflows.md) — the `gup` verb set
 - [Authoring templates](../guides/authoring-templates.md) — write your own

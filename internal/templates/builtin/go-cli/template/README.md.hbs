@@ -6,10 +6,10 @@ A Go CLI scaffolded by [guppy](https://nicedata.work/guppy) from the
 The dev environment is hermetic (Bazel + direnv, design §3.4):
 
 ```sh
-direnv allow . # once per checkout — gp appears in .direnv/bin/ on cd
-gp build         # bazel build //...
-gp test          # bazel test //...
-{{ if .linters }}gp lint          # bazel run //:gazelle -- -mode=diff (BUILD drift check)
+direnv allow . # once per checkout — gup appears in .direnv/bin/ on cd
+gup build         # bazel build //...
+gup test          # bazel test //...
+{{ if .linters }}gup lint          # bazel run //:gazelle -- -mode=diff (BUILD drift check)
 {{ end }}```
 
 No direnv? The same verbs work explicitly: `guppy project test`.

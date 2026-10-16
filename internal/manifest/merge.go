@@ -1,5 +1,5 @@
 // extends merge (design §5): declarative inheritance, never executable
-// hooks. Parents contribute payload files, [defaults], [vars], and [gp]
+// hooks. Parents contribute payload files, [defaults], [vars], and [gup]
 // verbs; children override them per-verb. Payload merging happens in
 // internal/templates (it needs the fs.FS layers); this file merges the
 // manifest half.
@@ -19,7 +19,7 @@ func MergeChain(parents []Manifest, child Manifest) Manifest {
 	out.Requires = map[string]string{}
 	out.Vars = map[string]VarSpec{}
 	out.Defaults = map[Axis]bool{}
-	out.GP = map[string]GPCommand{}
+	out.GUP = map[string]GUPCommand{}
 
 	for _, p := range parents {
 		mergeInto(&out, p)
@@ -43,5 +43,5 @@ func mergeInto(out *Manifest, src Manifest) {
 	maps.Copy(out.Requires, src.Requires)
 	maps.Copy(out.Vars, src.Vars)
 	maps.Copy(out.Defaults, src.Defaults)
-	maps.Copy(out.GP, src.GP)
+	maps.Copy(out.GUP, src.GUP)
 }

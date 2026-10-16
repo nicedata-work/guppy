@@ -1,6 +1,6 @@
 // Package render is the pure substitution engine (design §3.3) and its
 // deterministic output, FileSet — the unit guppy test snapshots, doctor
-// diffs, and gp verbs all consume.
+// diffs, and gup verbs all consume.
 //
 // Invariant: Engine has no filesystem access beyond reading the
 // template's own payload fs.FS — ever. No env, no network, no clock:

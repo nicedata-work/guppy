@@ -123,31 +123,31 @@ func Validate(m Manifest) []Issue {
 		}
 	}
 
-	for _, verb := range sortedKeys(m.GP) {
-		entry := m.GP[verb]
+	for _, verb := range sortedKeys(m.GUP) {
+		entry := m.GUP[verb]
 		switch {
 		case ReservedVerbs[verb]:
-			errf("[gp] verb %q is reserved: doctor is built in and never overridden", verb)
+			errf("[gup] verb %q is reserved: doctor is built in and never overridden", verb)
 		case !verbPattern.MatchString(verb):
-			errf("invalid [gp] verb %q: must match [a-z][a-z0-9-]*", verb)
+			errf("invalid [gup] verb %q: must match [a-z][a-z0-9-]*", verb)
 		}
 		if entry.Command == "" {
-			errf("[gp] verb %q has no command", verb)
+			errf("[gup] verb %q has no command", verb)
 		}
 		for _, axis := range entry.Requires {
 			if !KnownAxis(axis) {
-				errf("[gp] verb %q requires unknown default axis %q (known axes: %s)", verb, axis, strings.Join(AxisNames(allAxes()), ", "))
+				errf("[gup] verb %q requires unknown default axis %q (known axes: %s)", verb, axis, strings.Join(AxisNames(allAxes()), ", "))
 			}
 		}
 	}
 	for _, verb := range []string{"build", "test"} {
-		if _, ok := m.GP[verb]; !ok {
-			warnf("missing baseline [gp] verb %q (every first-party template ships build/test/lint)", verb)
+		if _, ok := m.GUP[verb]; !ok {
+			warnf("missing baseline [gup] verb %q (every first-party template ships build/test/lint)", verb)
 		}
 	}
 	if m.Language != "none" {
-		if _, ok := m.GP["lint"]; !ok {
-			warnf("missing baseline [gp] verb %q (every first-party template ships build/test/lint)", "lint")
+		if _, ok := m.GUP["lint"]; !ok {
+			warnf("missing baseline [gup] verb %q (every first-party template ships build/test/lint)", "lint")
 		}
 	}
 

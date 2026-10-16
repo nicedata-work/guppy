@@ -1,6 +1,6 @@
 // The command-refactor migration surface (docs: guppy-projects
 // cli-commands-refactor): project gains lifecycle subcommands (new/list/
-// jump/clear) beside the [gp] verb dispatcher, the authoring loop moves
+// jump/clear) beside the [gup] verb dispatcher, the authoring loop moves
 // under `guppy dev`, config becomes a noun-with-verbs, update grows the
 // `--all` / `.` ladder, and template gains refresh.
 package cli
@@ -42,8 +42,8 @@ func TestProjectLifecycleCommands(t *testing.T) {
 }
 
 // TestProjectBuiltinsShadowMapVerbs pins the precedence decision: the
-// project's [gp] map may define its own "list" verb, but the built-in
-// lifecycle subcommand wins (`gp`'s explicit fallback is the escape
+// project's [gup] map may define its own "list" verb, but the built-in
+// lifecycle subcommand wins (`gup`'s explicit fallback is the escape
 // hatch for map verbs).
 func TestProjectBuiltinsShadowMapVerbs(t *testing.T) {
 	root, env := catalogEnv(t)
@@ -220,7 +220,7 @@ func scaffoldProject(t *testing.T, env map[string]string, dir, template string) 
 // writeDevTemplate writes (or overwrites) a minimal local template
 // <dir>/<id>/ with the given version and extra manifest text — the
 // fixture behind the update-ladder and precedence tests.
-func writeDevTemplate(t *testing.T, templatesDir, id, version, extraGP string) string {
+func writeDevTemplate(t *testing.T, templatesDir, id, version, extraGUP string) string {
 	t.Helper()
 	dir := filepath.Join(templatesDir, id)
 	if err := os.MkdirAll(filepath.Join(dir, "template"), 0o755); err != nil {
@@ -232,8 +232,8 @@ func writeDevTemplate(t *testing.T, templatesDir, id, version, extraGP string) s
 		"language    = \"none\"\n" +
 		"description = \"test template\"\n" +
 		"\n[vars]\nname = { prompt = \"Project name\" }\n" +
-		"\n[gp]\ngreet = \"echo base-greet\"\n" +
-		extraGP + "\n"
+		"\n[gup]\ngreet = \"echo base-greet\"\n" +
+		extraGUP + "\n"
 	if err := os.WriteFile(filepath.Join(dir, "guppy.toml"), []byte(manifest), 0o644); err != nil {
 		t.Fatal(err)
 	}

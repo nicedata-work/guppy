@@ -5,17 +5,17 @@ import (
 	"testing"
 )
 
-func TestGPCommandUnmarshal(t *testing.T) {
+func TestGUPCommandUnmarshal(t *testing.T) {
 	t.Run("string form", func(t *testing.T) {
-		m := mustParse(t, "id = \"x\"\n[gp]\nbuild = \"make\"\n")
-		got := m.GP["build"]
+		m := mustParse(t, "id = \"x\"\n[gup]\nbuild = \"make\"\n")
+		got := m.GUP["build"]
 		if got.Command != "make" || len(got.Requires) != 0 {
-			t.Errorf("GP[build] = %+v, want command=make no requires", got)
+			t.Errorf("GUP[build] = %+v, want command=make no requires", got)
 		}
 	})
 	t.Run("table form", func(t *testing.T) {
-		m := mustParse(t, "id = \"x\"\n[gp]\nbuild = { command = \"make all\", requires = [\"bazel\", \"git\"] }\n")
-		got := m.GP["build"]
+		m := mustParse(t, "id = \"x\"\n[gup]\nbuild = { command = \"make all\", requires = [\"bazel\", \"git\"] }\n")
+		got := m.GUP["build"]
 		if got.Command != "make all" {
 			t.Errorf("command = %q, want %q", got.Command, "make all")
 		}
@@ -24,68 +24,68 @@ func TestGPCommandUnmarshal(t *testing.T) {
 		}
 	})
 	t.Run("unknown key is an error", func(t *testing.T) {
-		_, _, err := Parse([]byte("[gp]\nbuild = { command = \"x\", when = \"bazel\" }\n"))
+		_, _, err := Parse([]byte("[gup]\nbuild = { command = \"x\", when = \"bazel\" }\n"))
 		if err == nil || !strings.Contains(err.Error(), "unknown key") {
 			t.Errorf("Parse error = %v, want unknown-key error", err)
 		}
 	})
 	t.Run("wrong value type is an error", func(t *testing.T) {
-		_, _, err := Parse([]byte("[gp]\nbuild = 42\n"))
-		if err == nil || !strings.Contains(err.Error(), "gp entry") {
-			t.Errorf("Parse error = %v, want gp-entry union error", err)
+		_, _, err := Parse([]byte("[gup]\nbuild = 42\n"))
+		if err == nil || !strings.Contains(err.Error(), "gup entry") {
+			t.Errorf("Parse error = %v, want gup-entry union error", err)
 		}
 	})
 }
 
-func TestGPValidation(t *testing.T) {
-	base := func(gp string) Manifest {
-		m := mustParse(t, "id = \"x\"\nversion = \"1.0.0\"\nkind = \"cli\"\nlanguage = \"go\"\n"+gp)
+func TestGUPValidation(t *testing.T) {
+	base := func(gup string) Manifest {
+		m := mustParse(t, "id = \"x\"\nversion = \"1.0.0\"\nkind = \"cli\"\nlanguage = \"go\"\n"+gup)
 		return m
 	}
 	tests := []struct {
 		name    string
-		gp      string
+		gup     string
 		wantErr string
 		want    []string
 	}{
 		{
 			name: "baseline complete is clean",
-			gp:   "[gp]\nbuild = \"b\"\ntest = \"t\"\nlint = \"l\"\n",
+			gup:  "[gup]\nbuild = \"b\"\ntest = \"t\"\nlint = \"l\"\n",
 		},
 		{
 			name:    "doctor is reserved",
-			gp:      "[gp]\nbuild = \"b\"\ntest = \"t\"\nlint = \"l\"\ndoctor = \"rm -rf /\"\n",
+			gup:     "[gup]\nbuild = \"b\"\ntest = \"t\"\nlint = \"l\"\ndoctor = \"rm -rf /\"\n",
 			wantErr: "reserved",
 		},
 		{
 			name:    "invalid verb name",
-			gp:      "[gp]\nbuild = \"b\"\ntest = \"t\"\n\"Build All\" = \"b\"\n",
-			wantErr: "invalid [gp] verb",
+			gup:     "[gup]\nbuild = \"b\"\ntest = \"t\"\n\"Build All\" = \"b\"\n",
+			wantErr: "invalid [gup] verb",
 		},
 		{
 			name:    "empty command",
-			gp:      "[gp]\nbuild = \"\"\ntest = \"t\"\nlint = \"l\"\n",
+			gup:     "[gup]\nbuild = \"\"\ntest = \"t\"\nlint = \"l\"\n",
 			wantErr: "has no command",
 		},
 		{
 			name:    "unknown requires axis",
-			gp:      "[gp]\nbuild = { command = \"b\", requires = [\"widgets\"] }\ntest = \"t\"\nlint = \"l\"\n",
+			gup:     "[gup]\nbuild = { command = \"b\", requires = [\"widgets\"] }\ntest = \"t\"\nlint = \"l\"\n",
 			wantErr: "unknown default axis",
 		},
 		{
 			name: "missing lint is a warning for language templates",
-			gp:   "[gp]\nbuild = \"b\"\ntest = \"t\"\n",
-			want: []string{`missing baseline [gp] verb "lint"`},
+			gup:  "[gup]\nbuild = \"b\"\ntest = \"t\"\n",
+			want: []string{`missing baseline [gup] verb "lint"`},
 		},
 		{
 			name: "missing lint is fine for infra templates",
-			gp:   "",
-			want: []string{`missing baseline [gp] verb "build"`, `missing baseline [gp] verb "test"`},
+			gup:  "",
+			want: []string{`missing baseline [gup] verb "build"`, `missing baseline [gup] verb "test"`},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			issues := Validate(base(tt.gp))
+			issues := Validate(base(tt.gup))
 			if tt.wantErr == "" && HasErrors(issues) {
 				t.Fatalf("unexpected errors: %v", issues)
 			}
@@ -112,17 +112,17 @@ func TestGPValidation(t *testing.T) {
 	}
 }
 
-func TestMergeChainMergesGP(t *testing.T) {
+func TestMergeChainMergesGUP(t *testing.T) {
 	parent := Manifest{
 		ID: "base", Version: "1.0.0", Kind: "infra", Language: "none",
-		GP: map[string]GPCommand{
+		GUP: map[string]GUPCommand{
 			"build": {Command: "make"},
 			"test":  {Command: "make test"},
 		},
 	}
 	child := Manifest{
 		ID: "go-cli", Version: "1.0.0", Kind: "cli", Language: "go",
-		GP: map[string]GPCommand{
+		GUP: map[string]GUPCommand{
 			"test": {Command: "gotest -short"},
 			"lint": {Command: "golangci-lint"},
 		},
@@ -133,12 +133,12 @@ func TestMergeChainMergesGP(t *testing.T) {
 		"test":  "gotest -short",
 		"lint":  "golangci-lint",
 	}
-	if len(out.GP) != len(want) {
-		t.Fatalf("GP = %v, want %v", out.GP, want)
+	if len(out.GUP) != len(want) {
+		t.Fatalf("GUP = %v, want %v", out.GUP, want)
 	}
 	for verb, cmd := range want {
-		if got := out.GP[verb].Command; got != cmd {
-			t.Errorf("GP[%s] = %q, want %q", verb, got, cmd)
+		if got := out.GUP[verb].Command; got != cmd {
+			t.Errorf("GUP[%s] = %q, want %q", verb, got, cmd)
 		}
 	}
 }

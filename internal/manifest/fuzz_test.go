@@ -14,7 +14,7 @@ func FuzzParse(f *testing.F) {
 		"id = \"x\"\nversion = \"1.0.0\"\nkind = \"cli\"\nlanguage = \"go\"\n",
 		"id = 'unterminated\n",
 		"[vars]\nname = { prompt = \"Name\", default = \"{{ .name }}\" }\n",
-		"[gp]\nbuild = \"bazel build //...\"\ntest = { command = \"bazel test //...\", requires = [\"bazel\"] }\n",
+		"[gup]\nbuild = \"bazel build //...\"\ntest = { command = \"bazel test //...\", requires = [\"bazel\"] }\n",
 		"extends = [\"base-toolchain\"]\nrequires = { guppy = \">=1.2\" }\n",
 		"[[case]]\nname = \"x\"\n",
 		"\x00\x01\xff\xfe",
