@@ -93,6 +93,10 @@ aarch64 | arm64) arch=arm64 ;;
 *) die "unsupported architecture: $arch" ;;
 esac
 
+if [ "$os" = "darwin" ] && [ "$arch" = "amd64" ]; then
+	die "macOS releases are Apple Silicon (arm64) only; no darwin-amd64 build exists"
+fi
+
 if [ "$(id -u)" = "0" ]; then
 	warn "running as root; guppy is meant to be installed per-user"
 fi

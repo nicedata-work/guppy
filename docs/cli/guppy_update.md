@@ -2,30 +2,38 @@
 
 ## Synopsis
 
-Download the latest (or a pinned) release, verify its checksum, and
-atomically replace the running binary. The previous binary is kept as a
-backup until the new one is in place, and restored if installation fails.
+Update things, in three composable forms:
 
-Updates the guppy executable only; installed templates are reconciled
-with "guppy template update".
+  guppy update        update the guppy executable only
+  guppy update --all  update the executable and all installed templates
+  guppy update .      update the current project to its template's
+                      latest version (requires .guppy/project.toml)
+
+A PATH form re-renders the project's recorded vars and toggles against
+the newest template version and merges the result (existing files are
+never clobbered — they are kept and reported). Installed templates are
+reconciled with "guppy template update"; a project update always uses
+what is installed locally after that.
 
 ## Usage
 
 ```
-guppy update [flags]
+guppy update [PATH] [flags]
 ```
 
 ## Examples
 
 ```
 guppy update
-  guppy update --version 1.2.3
+  guppy update --all
+  guppy update .
 ```
 
 ## Flags
 
 | Flag | Description |
 |------|-------------|
+| --all | also update all installed templates (executable update + guppy template update) |
 | --version | update to this exact version instead of latest |
 
 
@@ -36,6 +44,7 @@ guppy update
 | --color (default auto) | color output: auto, always, never |
 | --config | path to guppy.toml settings file |
 | --directory | run as if started in this directory |
+| --interactive | enable interactive prompts |
 | --no-progress | disable progress output |
 | --offline | disable all network access |
 | -q, --quiet | only print errors |

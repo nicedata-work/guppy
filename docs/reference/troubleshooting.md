@@ -33,12 +33,12 @@ The substitution allow-list is strict: an undeclared `{{ .X }}` is an
 error, never silently empty. Declare the var in `[vars]` (or remove the
 reference). A declared-but-unused var is only a warning.
 
-## The project index (`guppy list`) is stale or missing entries
+## The project index (`guppy project list`) is stale or missing entries
 
-The index is maintained by the shellhook (`guppy init-shell`) and folded
+The index is maintained by the shellhook (`guppy shell-env`) and folded
 off the hot path; a failed fold is retried on the next read. Entries whose
 path or marker no longer exists are pruned automatically. If entries are
-missing, re-run `guppy init-shell` and confirm the eval line is in your rc
+missing, re-run `guppy shell-env` and confirm the eval line is in your rc
 file; a broken hook never breaks your shell — it only leaves the index
 stale.
 

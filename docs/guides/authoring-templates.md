@@ -10,8 +10,8 @@ A template is a plain directory — no registration, no build step:
 ```text
 go-cli/
 ├── guppy.toml            # the manifest (the only required file)
-├── tests.toml            # optional: snapshot test matrix for `guppy test`
-├── testdata/snapshot/    # golden snapshots (`guppy test -u` writes these)
+├── tests.toml            # optional: snapshot test matrix for `guppy dev test`
+├── testdata/snapshot/    # golden snapshots (`guppy dev test -u` writes these)
 └── template/             # payload — written verbatim except {{ }} substitution
     ├── MODULE.bazel
     ├── .bazelversion
@@ -28,7 +28,7 @@ During development you just point guppy at the directory — templates are
 loaded in place, never copied:
 
 ```sh
-guppy lint ./my-template && guppy test ./my-template
+guppy dev lint ./my-template && guppy dev test ./my-template
 guppy new --template ./my-template demo
 ```
 
@@ -68,7 +68,7 @@ include = ["**/*"]
 exclude = ["template/scratch/**"]
 ```
 
-Validation (`guppy lint`) splits errors from warnings:
+Validation (`guppy dev lint`) splits errors from warnings:
 
 | Check | Level |
 |---|---|
@@ -95,7 +95,7 @@ The renderer is deliberately tiny — no logic, no loops, no control flow:
 {{ if .bazel }}…{{ end }}    the ONLY conditional: boolean toggles, nestable
 ```
 
-Rules that make `guppy lint` able to statically verify every substitution:
+Rules that make `guppy dev lint` able to statically verify every substitution:
 
 - **Strict allow-list.** An undeclared `{{ .X }}` is a lint error and a
   render error — never silently empty.
@@ -131,7 +131,7 @@ First-party templates also ship the environment contract payload
 (`MODULE.bazel`, `.bazelversion`, `.envrc` + `tools/env/`, contextual
 `.gitignore`) via `base-toolchain`; extend it rather than reinventing it.
 
-## Snapshot testing (`guppy test`)
+## Snapshot testing (`guppy dev test`)
 
 `tests.toml` declares a var/toggle matrix beside the manifest. The
 `default` case (var defaults + default toggles) is implicit:
@@ -151,13 +151,13 @@ in one human-diffable TOML file (one data file per case keeps build
 tooling out of snapshot dirs). The loop is:
 
 ```sh
-guppy lint ./my-template && guppy test ./my-template
+guppy dev lint ./my-template && guppy dev test ./my-template
 # after an intentional change:
-guppy test -u ./my-template
+guppy dev test -u ./my-template
 ```
 
 Vars with no value render as `example-<var>` so snapshots stay
-deterministic. `guppy test` also warns when a `[defaults]` toggle is not
+deterministic. `guppy dev test` also warns when a `[defaults]` toggle is not
 exercised by any case.
 
 ## Shipping
@@ -169,5 +169,5 @@ exercised by any case.
   with `guppy template add community:<source>` and pass an explicit
   per-template review-and-confirm gate before first use. Updates re-enter
   the gate.
-- Keep `guppy lint && guppy test` green in CI; they work offline against
+- Keep `guppy dev lint && guppy dev test` green in CI; they work offline against
   the directory alone.

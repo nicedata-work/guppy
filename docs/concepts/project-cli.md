@@ -1,7 +1,7 @@
 # The project CLI (`gp`)
 
 guppy is one binary with two faces. Invoked as `guppy`, it is the global
-management CLI (templates, settings, `guppy list`, `guppy update`).
+management CLI (templates, settings, `guppy project list`, `guppy update`).
 Invoked as `guppy project <verb>` — shimmed under the short name `gp` — it
 operates on *this* project.
 

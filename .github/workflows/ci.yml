@@ -76,7 +76,7 @@ jobs:
         run: ./scripts/fuzz.sh
 
   release-matrix:
-    name: Release matrix build (linux/darwin/windows × amd64/arm64)
+    name: Release matrix build (linux × amd64/arm64, darwin × arm64, windows × amd64/arm64)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -89,7 +89,7 @@ jobs:
         run: |
           set -euo pipefail
           count=0
-          for cell in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
+          for cell in linux/amd64 linux/arm64 darwin/arm64 windows/amd64 windows/arm64; do
             os="${cell%/*}"; arch="${cell#*/}"
             asset="dist/guppy-9.9.9-$os-$arch.tar.gz"
             test -f "$asset" || { echo "missing $asset"; exit 1; }
@@ -103,7 +103,7 @@ jobs:
             fi
             count=$((count + 1))
           done
-          test "$count" -eq 6
+          test "$count" -eq 5
           test "$(cat dist/latest.txt)" = 9.9.9
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4
@@ -140,17 +140,6 @@ jobs:
   installer-smoke-macos:
     name: Installer smoke test (macOS host, release matrix cell)
     runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-go@v6
-        with:
-          go-version-file: go.mod
-      - name: "Run installer smoke test (host fallback: isolated HOME)"
-        run: ./scripts/smoke-install.sh
-
-  installer-smoke-macos-intel:
-    name: Installer smoke test (macOS x86_64 host, release matrix cell)
-    runs-on: macos-13
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-go@v6

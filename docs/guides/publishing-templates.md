@@ -81,13 +81,13 @@ sha256sum guppy-my-template-1.2.0.tar.gz   # paste into index.json
 Validate before publishing — the same commands consumers' CI would run:
 
 ```sh
-guppy lint ./my-template && guppy test ./my-template
+guppy dev lint ./my-template && guppy dev test ./my-template
 ```
 
 ## Publishing a new version
 
 1. Bump `version` in the template's `guppy.toml` (semver).
-2. `guppy lint && guppy test` green locally.
+2. `guppy dev lint && guppy dev test` green locally.
 3. Build the new tarball; compute its sha256.
 4. Append the new `Entry` to `index.json` (keep old entries — installs
    pin `id@version` and older pins must keep resolving).
@@ -97,7 +97,7 @@ For the official registry this whole flow is a PR:
 [nicedata-work/guppy-registry](https://github.com/nicedata-work/guppy-registry)
 holds `index.json` only — your template and tarball stay in your own
 repo — and its CI fetches the tarball, verifies the checksum, and runs
-`guppy lint` + `guppy test` before a maintainer merges. See that repo's
+`guppy dev lint` + `guppy dev test` before a maintainer merges. See that repo's
 [CONTRIBUTING.md](https://github.com/nicedata-work/guppy-registry/blob/main/CONTRIBUTING.md).
 
 Consumers then run `guppy template update <id>` (or `--all`): the client

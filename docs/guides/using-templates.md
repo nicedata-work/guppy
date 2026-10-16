@@ -70,7 +70,7 @@ What lands in the repo:
 - `templates/` — the drop zone: one directory per team template
 - `scripts/build-registry.py` — rebuilds `index.json` + `tarballs/`
   from `templates/` (deterministic; `--check` fails on drift)
-- `scripts/validate-templates.sh` — `guppy lint` + `guppy test` on every template
+- `scripts/validate-templates.sh` — `guppy dev lint` + `guppy dev test` on every template
 - `.github/workflows/registry.yml` — CI: validate on PRs; rebuild and
   commit the registry on merge, so the repo's checkout is always a
   complete, current registry

@@ -16,6 +16,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 // File is one buffered regular file of an archive.
@@ -159,4 +160,48 @@ func checkNoSymlink(root, rel string) error {
 		}
 	}
 	return nil
+}
+
+// WriteTarGz renders files into a gzipped tarball — the publish path of
+// `guppy dev publish`, the exact inverse of ReadTarGz's contract.
+// Deterministic: fixed modtime epoch and no gzip header metadata, so a
+// republish of an unchanged tree is byte-identical and its sha256 stable.
+// Rel paths are re-validated here (the write-side mirror of the read
+// path's checks): no absolute paths, no "..", regular files only.
+func WriteTarGz(files []File) ([]byte, error) {
+	for _, f := range files {
+		rel := path.Clean(f.Rel)
+		if rel == "." || strings.HasPrefix(rel, "../") || path.IsAbs(f.Rel) {
+			return nil, fmt.Errorf("archive entry escapes root: %q", f.Rel)
+		}
+	}
+	var buf bytes.Buffer
+	gz := gzip.NewWriter(&buf)
+	tw := tar.NewWriter(gz)
+	for _, f := range files {
+		mode := f.Mode.Perm()
+		if mode == 0 {
+			mode = 0o644
+		}
+		hdr := &tar.Header{
+			Name:     path.Clean(f.Rel),
+			Mode:     int64(mode),
+			Size:     int64(len(f.Body)),
+			Typeflag: tar.TypeReg,
+			ModTime:  time.Unix(0, 0),
+		}
+		if err := tw.WriteHeader(hdr); err != nil {
+			return nil, fmt.Errorf("tar header %s: %w", f.Rel, err)
+		}
+		if _, err := tw.Write(f.Body); err != nil {
+			return nil, fmt.Errorf("tar body %s: %w", f.Rel, err)
+		}
+	}
+	if err := tw.Close(); err != nil {
+		return nil, fmt.Errorf("close tar: %w", err)
+	}
+	if err := gz.Close(); err != nil {
+		return nil, fmt.Errorf("close gzip: %w", err)
+	}
+	return buf.Bytes(), nil
 }

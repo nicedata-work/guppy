@@ -2,8 +2,8 @@
 
 A guppy template is a manifest plus a payload. Nothing else: no template
 engine, no plugin runtime, no executable hooks — the renderer is a tiny,
-pure function, which is what makes `guppy lint` able to statically verify
-every substitution and `guppy test` able to produce deterministic golden
+pure function, which is what makes `guppy dev lint` able to statically verify
+every substitution and `guppy dev test` able to produce deterministic golden
 snapshots.
 
 ## Layout
@@ -61,7 +61,7 @@ include = ["**/*"]                    # from what the directory contains,
 exclude = ["template/scratch/**"]     # never expand it
 ```
 
-Validation rules are enforced by `guppy lint` — errors refuse a scaffold,
+Validation rules are enforced by `guppy dev lint` — errors refuse a scaffold,
 warnings do not. Notables: `id`/`version`/`kind`/`language` must be present
 and well-formed (**error**); a `[vars]` var referenced in the payload but
 not declared is an **error** (the strict allow-list — undeclared `{{ .X }}`

@@ -26,21 +26,27 @@ import (
 func newProjectCmd(rt *runtime, out *output, p *prompter) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "project [VERB] [ARGS...]",
-		Short: "Run a project verb from .guppy/project.toml (shimmed as gp)",
-		Long: `Run a project verb — the project-scoped face of guppy, shimmed as "gp".
+		Short: "Create and manage projects (shimmed as gp)",
+		Long: `Create and manage projects, and run project verbs — the project-scoped
+face of guppy, shimmed as "gp".
 
-guppy project walks up to the nearest .guppy/project.toml (the marker of
-a guppy-managed project) and dispatches the verb through that
-project's [gp] command map. Verbs execute from the project root through
-direnv when the project is direnv-wired (the pinned toolchain
-environment); without direnv they run directly — Bazel pins
-(.bazelversion) still give version hermeticity.
+Built-in subcommands cover the project lifecycle: new, list, jump, and
+clear. Inside a guppy-managed project, any other verb dispatches
+through that project's [gp] command map (.guppy/project.toml), walking
+up to the nearest marker first. Built-in names shadow map verbs: a
+project defining its own "list" verb must invoke it as
+gp's explicit fallback or rename it.
 
-An unknown verb prints the resolved command map. "doctor" is built in
-(project scope) and never appears in the map.`,
+Map verbs execute from the project root through direnv when the
+project is direnv-wired (the pinned toolchain environment); without
+direnv they run directly — Bazel pins (.bazelversion) still give
+version hermeticity. An unknown verb prints the resolved command map.
+"doctor" is built in (project scope) and never appears in the map.`,
 		Args:              cobra.ArbitraryArgs,
 		ValidArgsFunction: nil,
-		Example: `  gp build            # inside a project (direnv shim)
+		Example: `  guppy project new dbt-project --template dbt-v2
+  guppy project list
+  gp build            # inside a project (direnv shim)
   guppy project test  # the explicit fallback, works without direnv
   guppy --directory path/to/proj project lint`,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -49,6 +55,10 @@ An unknown verb prints the resolved command map. "doctor" is built in
 	}
 
 	cmd.Flags().SetInterspersed(false)
+	cmd.AddCommand(newNewCmd(rt, out, p))
+	cmd.AddCommand(newListCmd(rt, out))
+	cmd.AddCommand(newJumpCmd(rt, out))
+	cmd.AddCommand(newClearCmd(rt, out))
 	return cmd
 }
 

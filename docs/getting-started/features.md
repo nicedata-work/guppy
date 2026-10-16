@@ -47,14 +47,14 @@ review-and-confirm gate before first use. See
 
 ## First-class authoring
 
-The authoring loop is `edit → guppy lint && guppy test` with no reinstall
-step: templates are ordinary directories loaded in place. `guppy test`
-renders golden snapshots from a declared var matrix; `guppy lint` statically
+The authoring loop is `edit → guppy dev lint && guppy dev test` with no reinstall
+step: templates are ordinary directories loaded in place. `guppy dev test`
+renders golden snapshots from a declared var matrix; `guppy dev lint` statically
 verifies every substitution in the payload resolves.
 
 ## Traceability
 
 Every scaffold writes `.guppy/project.toml` (committed, deterministic, no
-secrets), and a shellhook-fed global index (`guppy list`) tracks managed
+secrets), and a shellhook-fed global index (`guppy project list`) tracks managed
 projects on the machine. `guppy doctor` diffs a project against its
 template — missing files, stale pins — and `--fix` restores the safe subset.

@@ -6,7 +6,7 @@ under a minute.
 ## 1. Hook up your shell
 
 ```sh
-guppy init-shell
+guppy shell-env
 ```
 
 This emits a shellhook (zsh/bash) — a one-line `eval` in your rc file. The

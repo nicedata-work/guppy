@@ -53,7 +53,7 @@ func TestListRecordsAndPrunes(t *testing.T) {
 		dirs = append(dirs, d)
 	}
 
-	code, stdout, stderr := run([]string{"list"}, env)
+	code, stdout, stderr := run([]string{"project", "list"}, env)
 	if code != ExitOK {
 		t.Fatalf("list: exit = %d (stderr: %s)", code, stderr)
 	}
@@ -69,7 +69,7 @@ func TestListRecordsAndPrunes(t *testing.T) {
 	if err := os.RemoveAll(dirs[1]); err != nil {
 		t.Fatal(err)
 	}
-	code, stdout, _ = run([]string{"list"}, env)
+	code, stdout, _ = run([]string{"project", "list"}, env)
 	if code != ExitOK {
 		t.Fatalf("list after delete: exit = %d", code)
 	}
@@ -85,7 +85,7 @@ func TestListRecordsAndPrunes(t *testing.T) {
 	if err := os.Remove(filepath.Join(dirs[0], ".guppy", "project.toml")); err != nil {
 		t.Fatal(err)
 	}
-	code, stdout, _ = run([]string{"list"}, env)
+	code, stdout, _ = run([]string{"project", "list"}, env)
 	if code != ExitOK {
 		t.Fatalf("list after marker delete: exit = %d", code)
 	}
@@ -116,7 +116,7 @@ func TestListFoldsSeenLog(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	code, stdout, stderr := run([]string{"list"}, env)
+	code, stdout, stderr := run([]string{"project", "list"}, env)
 	if code != ExitOK {
 		t.Fatalf("list: exit = %d (stderr: %s)", code, stderr)
 	}
@@ -131,7 +131,7 @@ func TestListFoldsSeenLog(t *testing.T) {
 
 func TestListEmptyIsFriendly(t *testing.T) {
 	_, env := catalogEnv(t)
-	code, stdout, _ := run([]string{"list"}, env)
+	code, stdout, _ := run([]string{"project", "list"}, env)
 	if code != ExitOK {
 		t.Fatalf("exit = %d", code)
 	}
@@ -275,7 +275,7 @@ func TestInitShellEmitsAndInstalls(t *testing.T) {
 	root, env := catalogEnv(t)
 	env["SHELL"] = "/bin/zsh"
 
-	code, stdout, stderr := run([]string{"init-shell"}, env)
+	code, stdout, stderr := run([]string{"shell-env"}, env)
 	if code != ExitOK {
 		t.Fatalf("init-shell: exit = %d (stderr: %s)", code, stderr)
 	}
@@ -290,11 +290,11 @@ func TestInitShellEmitsAndInstalls(t *testing.T) {
 	if err := os.WriteFile(rc, []byte("export EDITOR=vim\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	code, _, stderr = run([]string{"init-shell", "--install"}, env)
+	code, _, stderr = run([]string{"shell-env", "--install"}, env)
 	if code != ExitOK {
 		t.Fatalf("init-shell --install: exit = %d (stderr: %s)", code, stderr)
 	}
-	code, _, _ = run([]string{"init-shell", "--install"}, env)
+	code, _, _ = run([]string{"shell-env", "--install"}, env)
 	if code != ExitOK {
 		t.Fatalf("re-install: exit = %d", code)
 	}
@@ -322,7 +322,7 @@ func TestInitShellEmitsAndInstalls(t *testing.T) {
 
 func TestInitShellRejectsUnsupportedShell(t *testing.T) {
 	_, env := catalogEnv(t)
-	code, _, stderr := run([]string{"init-shell", "fish"}, env)
+	code, _, stderr := run([]string{"shell-env", "fish"}, env)
 	if code != ExitInput {
 		t.Errorf("exit = %d, want %d (stderr: %s)", code, ExitInput, stderr)
 	}

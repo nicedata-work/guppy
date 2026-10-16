@@ -5,6 +5,7 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -26,37 +27,42 @@ PATH is a template directory (default "."), TEMPLATE a resolvable template
 id such as a built-in. Exit code 1 if any error-level issue is found.`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			started := out.clock()
 			spec := ""
 			if len(args) == 1 {
 				spec = args[0]
 			}
-			lt, issues, err := rt.loadTemplate(cmd.Context(), spec)
-			if err != nil {
-
-				_, _ = fmt.Fprintf(out.stderr, "%s %v\n", tagMark(out.errP(), red, "FAIL"), err)
-				return Fail(fmt.Errorf("lint failed"))
-			}
-			issues = append(issues, render.Lint(lt.t.Payload, lt.t.Manifest)...)
-			for _, i := range issues {
-				_, _ = fmt.Fprintln(out.stderr, lintLine(out.errP(), i))
-			}
-			var errs, warns int
-			for _, i := range issues {
-				if i.Level == manifest.LevelError {
-					errs++
-				} else {
-					warns++
-				}
-			}
-			if errs > 0 {
-				out.summary(started, errs, warns)
-				return Fail(fmt.Errorf("lint: %d errors, %d warnings", errs, warns))
-			}
-			out.summary(started, 0, warns)
-			return nil
+			return runLint(cmd.Context(), rt, out, spec)
 		},
 	}
+}
+
+// runLint is the authoring loop's static half, shared by `guppy dev lint`
+// and `guppy dev publish` (publish never ships an unlinted template).
+func runLint(ctx context.Context, rt *runtime, out *output, spec string) error {
+	started := out.clock()
+	lt, issues, err := rt.loadTemplate(ctx, spec)
+	if err != nil {
+		_, _ = fmt.Fprintf(out.stderr, "%s %v\n", tagMark(out.errP(), red, "FAIL"), err)
+		return Fail(fmt.Errorf("lint failed"))
+	}
+	issues = append(issues, render.Lint(lt.t.Payload, lt.t.Manifest)...)
+	for _, i := range issues {
+		_, _ = fmt.Fprintln(out.stderr, lintLine(out.errP(), i))
+	}
+	var errs, warns int
+	for _, i := range issues {
+		if i.Level == manifest.LevelError {
+			errs++
+		} else {
+			warns++
+		}
+	}
+	if errs > 0 {
+		out.summary(started, errs, warns)
+		return Fail(fmt.Errorf("lint: %d errors, %d warnings", errs, warns))
+	}
+	out.summary(started, 0, warns)
+	return nil
 }
 
 // lintLine renders one lint issue with its dbt-style status tag

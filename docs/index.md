@@ -20,7 +20,7 @@ language- and target-agnostic. Written in **Go**, built with **Bazel**.
   always an explicit, per-template trust decision.
 * Templates are **declarative** (`guppy.toml` + payload) and **extendable**
   (`extends`); no template engine, no plugin runtime, no executable hooks.
-* First-class authoring tooling: `guppy lint` and `guppy test` (golden
+* First-class authoring tooling: `guppy dev lint` and `guppy dev test` (golden
   snapshot tests) without leaving the CLI.
 * Every managed project is traceable: a committed `.guppy/project.toml`
   marker plus a global index kept fresh by a shellhook.

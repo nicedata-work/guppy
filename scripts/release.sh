@@ -8,7 +8,8 @@
 #
 # Usage: scripts/release.sh [VERSION]              one platform (host by default)
 #        scripts/release.sh --matrix [VERSION]     the full release matrix:
-#                                                  linux/darwin/windows × amd64/arm64
+#                                                  linux × amd64/arm64, darwin × arm64,
+#                                                  windows × amd64/arm64
 # Env:   GOOS/GOARCH (default: host), DIST_DIR (default dist/)
 #
 # Note: artifacts are cross-compiled with the Go toolchain (CGO_ENABLED=0,
@@ -30,7 +31,7 @@ if [ "${1:-}" = "--matrix" ]; then
         exit 1
     fi
     DIST="${DIST_DIR:-$ROOT/dist}"
-    for cell in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
+    for cell in linux/amd64 linux/arm64 darwin/arm64 windows/amd64 windows/arm64; do
         GOOS="${cell%/*}" GOARCH="${cell#*/}" DIST_DIR="$DIST" "$0" "$VERSION"
     done
     echo "release.sh: matrix complete → $DIST ($(ls "$DIST" | wc -l) files)"
@@ -53,6 +54,10 @@ case "${GOARCH:-$(uname -m)}" in
     aarch64|arm64) GOARCH=arm64 ;;
     *) echo "release.sh: unsupported architecture" >&2; exit 1 ;;
 esac
+if [ "$GOOS" = "darwin" ] && [ "$GOARCH" = "amd64" ]; then
+    echo "release.sh: darwin/amd64 is not a release target (Apple Silicon only)" >&2
+    exit 1
+fi
 
 DIST_DIR="${DIST_DIR:-$ROOT/dist}"
 STAGE="$(mktemp -d)"

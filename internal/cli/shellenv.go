@@ -1,9 +1,9 @@
-// `guppy init-shell` — shellhook emission .
+// `guppy shell-env` — shellhook emission (design §9).
 //
-//	guppy init-shell [zsh|bash]        print the hook (eval in your rc file)
-//	guppy init-shell --install [SHELL] write the hook into the rc file as a
-//	                                   marked block (removable by
-//	                                   `guppy uninstall`)
+//	guppy shell-env [zsh|bash]        print the hook (eval in your rc file)
+//	guppy shell-env --install [SHELL] write the hook into the rc file as a
+//	                                  marked block (removable by
+//	                                  `guppy uninstall`)
 //
 // The hook is a stub on the hot path: one directory comparison per
 // prompt, one append when entering a managed project. It never invokes
@@ -21,26 +21,28 @@ import (
 	"github.com/nicedata-work/guppy/internal/catalog"
 )
 
-func newInitShellCmd(rt *runtime, out *output) *cobra.Command {
+func newShellEnvCmd(rt *runtime, out *output) *cobra.Command {
 	var install bool
 	cmd := &cobra.Command{
-		Use:   "init-shell [zsh|bash]",
-		Short: "Emit the shellhook that keeps the project index fresh",
+		Use:     "shell-env [zsh|bash]",
+		Aliases: []string{"init-shell"}, // pre-rename spelling; kept working
+		Short:   "Emit the shellhook that keeps the project index fresh",
 		Long: `Emit the shellhook that keeps the global project index fresh.
 
 Without --install the hook is printed for eval in your rc file:
 
-    eval "$(guppy init-shell zsh)"
+    eval "$(guppy shell-env zsh)"
 
 With --install it is written into the rc file as a marked block
 (idempotent; ` + "`guppy uninstall`" + ` removes it). The hook itself is a
 stub: one directory comparison per prompt and one append when you enter
 a guppy-managed project — it never invokes guppy, so it cannot slow
 down or break your shell. Guppy folds its observations into
-index.toml whenever a command reads the index (guppy list, doctor).`,
+index.toml whenever a command reads the index (guppy project list,
+doctor).`,
 		Args: cobra.MaximumNArgs(1),
-		Example: `  eval "$(guppy init-shell zsh)"
-  guppy init-shell bash --install`,
+		Example: `  eval "$(guppy shell-env zsh)"
+  guppy shell-env bash --install`,
 		RunE: func(_ *cobra.Command, args []string) error {
 			shell := ""
 			if len(args) == 1 {
@@ -68,7 +70,7 @@ func runInitShell(rt *runtime, out *output, shell string, install bool) error {
 	}
 	rc := rcFile(shell)
 	if rc == "" {
-		return InputError(fmt.Errorf("don't know the rc file for shell %q on %s — run \"guppy init-shell %s\" and add it manually", shell, goruntime.GOOS, shell))
+		return InputError(fmt.Errorf("don't know the rc file for shell %q on %s — run \"guppy shell-env %s\" and add it manually", shell, goruntime.GOOS, shell))
 	}
 	if err := catalog.InstallHook(rc, h); err != nil {
 		return Fail(err)
@@ -95,7 +97,7 @@ func resolveShell(env EnvFunc, arg string) (string, error) {
 			return base, nil
 		}
 	}
-	return "", fmt.Errorf("cannot detect your shell from $SHELL — pass one explicitly: guppy init-shell [zsh|bash]")
+	return "", fmt.Errorf("cannot detect your shell from $SHELL — pass one explicitly: guppy shell-env [zsh|bash]")
 }
 
 // rcFile is the rc file the hook is installed into per shell/OS.

@@ -9,7 +9,7 @@ When reporting a bug, include:
 - the exact command and full output (run with `-v` for verbose logging);
 - your OS/arch and `guppy --version`;
 - for template issues, the template id/version from
-  `guppy template show <id>` and, if scaffolding failed, the `guppy lint`
+  `guppy template show <id>` and, if scaffolding failed, the `guppy dev lint`
   output for it;
 - what you expected to happen.
 
