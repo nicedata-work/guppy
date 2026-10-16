@@ -11,11 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: bazel-contrib/setup-bazel@0.15.0
+      - uses: bazel-contrib/setup-bazel@0.19.1
         with:
           bazelisk-cache: true
           disk-cache: true
-          actions-cache: true
+          repository-cache: true
+          cache-save: ${{ github.event_name != 'pull_request' }}
       - name: Check BUILD files are gazelle-clean
         run: bazel run //:gazelle -- -mode=diff
       - name: Build
@@ -127,11 +128,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: bazel-contrib/setup-bazel@0.15.0
+      - uses: bazel-contrib/setup-bazel@0.19.1
         with:
           bazelisk-cache: true
           disk-cache: true
-          actions-cache: true
+          repository-cache: true
+          cache-save: ${{ github.event_name != 'pull_request' }}
       - name: Build guppy
         run: bazel build //cmd/guppy
       - name: Run signal smoke test (real SIGINT/SIGTERM in a bare container)
@@ -165,11 +167,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: bazel-contrib/setup-bazel@0.15.0
+      - uses: bazel-contrib/setup-bazel@0.19.1
         with:
           bazelisk-cache: true
           disk-cache: true
-          actions-cache: true
+          repository-cache: true
+          cache-save: ${{ github.event_name != 'pull_request' }}
       - name: Build guppy
         run: bazel build //cmd/guppy
       - name: Run project smoke test
@@ -180,11 +183,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: bazel-contrib/setup-bazel@0.15.0
+      - uses: bazel-contrib/setup-bazel@0.19.1
         with:
           bazelisk-cache: true
           disk-cache: true
-          actions-cache: true
+          repository-cache: true
+          cache-save: ${{ github.event_name != 'pull_request' }}
       - name: Build guppy
         run: bazel build //cmd/guppy
       - name: Run distribution smoke test
@@ -195,11 +199,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: bazel-contrib/setup-bazel@0.15.0
+      - uses: bazel-contrib/setup-bazel@0.19.1
         with:
           bazelisk-cache: true
           disk-cache: true
-          actions-cache: true
+          repository-cache: true
+          cache-save: ${{ github.event_name != 'pull_request' }}
       - name: Build guppy
         run: bazel build //cmd/guppy
       - name: Run catalog smoke test

@@ -135,7 +135,7 @@ echo "$batch" | grep -q "\[OK \]"        # the others are clean
 guppy doctor --all --fix >/dev/null 2>&1 || true
 
 echo "== offline: catalog + doctor are local-scope only =="
-GUPPY_OFFLINE=true guppy list >/dev/null
+GUPPY_OFFLINE=true guppy project list >/dev/null
 set +e
 GUPPY_OFFLINE=true guppy doctor >/dev/null 2>&1
 code=$?
