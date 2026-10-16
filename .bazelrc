@@ -11,6 +11,10 @@ build --incompatible_strict_action_env
 
 build --workspace_status_command=scripts/build-info.sh
 
+# Nest convenience symlinks (out/bin/testlogs/guppy) under .bazel/ so the
+# workspace root stays clean. A trailing slash on the prefix = directory.
+build --symlink_prefix=.bazel/
+
 test --test_output=errors
 
 # Local overrides go in .bazelrc.local (gitignored).

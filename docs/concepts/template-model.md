@@ -15,6 +15,7 @@ go-cli/
 │   ├── MODULE.bazel
 │   ├── .bazelversion
 │   ├── .nvmrc
+│   ├── .bazelrc.hbs   # `.hbs` suffix marks a rendered file
 │   ├── .gitignore.hbs    # `.hbs` suffix marks a rendered file
 │   └── ...
 └── extends: (declared in guppy.toml, not a file)

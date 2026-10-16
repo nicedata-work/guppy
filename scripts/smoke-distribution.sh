@@ -16,7 +16,7 @@ set -euo pipefail
 
 IMAGE="${1:-debian:bookworm-slim}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-GUPPY_BIN="${GUPPY_BIN:-$ROOT/bazel-bin/cmd/guppy/guppy_/guppy}"
+GUPPY_BIN="${GUPPY_BIN:-$ROOT/.bazel/bin/cmd/guppy/guppy_/guppy}"
 ENGINE="${CONTAINER_ENGINE:-}"
 if [[ -z "$ENGINE" ]]; then
   ENGINE="$(command -v podman || command -v docker || true)"

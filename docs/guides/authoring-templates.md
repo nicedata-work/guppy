@@ -128,8 +128,9 @@ axes are off at scaffold time are dropped (`--no-bazel` yields no
 (`{{ .module_path }}`); an undeclared var is a scaffold error.
 
 First-party templates also ship the environment contract payload
-(`MODULE.bazel`, `.bazelversion`, `.envrc` + `tools/env/`, contextual
-`.gitignore`) via `base-toolchain`; extend it rather than reinventing it.
+(`MODULE.bazel`, `.bazelversion`, `.bazelrc`, `.envrc` + `tools/env/`,
+contextual `.gitignore`) via `base-toolchain`; extend it rather than
+reinventing it.
 
 ## Snapshot testing (`guppy dev test`)
 

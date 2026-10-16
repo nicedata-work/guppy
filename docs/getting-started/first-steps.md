@@ -32,6 +32,8 @@ What lands in the directory:
 - git + a contextual `.gitignore`
 - `MODULE.bazel`, `.bazelversion`, `.nvmrc` — pinned toolchains, reproducible
   before the first commit
+- `.bazelrc` — Bazel convenience symlinks (`out`, `bin`, `testlogs`)
+  nested under `.bazel/`, keeping the project root clean
 - linters + testing wired as Bazel targets
 - a bare-bones `AGENTS.md`
 - `.envrc` + `tools/env/` — the direnv wiring that makes the environment
