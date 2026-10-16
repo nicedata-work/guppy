@@ -8,7 +8,7 @@ import (
 )
 
 func TestLintCleanBuiltin(t *testing.T) {
-	code, stdout, _ := run([]string{"lint", "go-cli"}, nil)
+	code, stdout, _ := run([]string{"dev", "lint", "go-cli"}, nil)
 	if code != ExitOK {
 		t.Errorf("exit = %d, want 0 (stdout: %s)", code, stdout)
 	}
@@ -21,7 +21,7 @@ func TestLintReportsSpecTableErrors(t *testing.T) {
 	if err := os.WriteFile(corrupt, []byte("module {{ .module_path }}{{ .oops }}\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	code, stdout, stderr := run([]string{"lint", dir}, nil)
+	code, stdout, stderr := run([]string{"dev", "lint", dir}, nil)
 	if code != ExitFailure {
 		t.Fatalf("exit = %d, want %d (stderr: %s)", code, ExitFailure, stderr)
 	}
@@ -40,7 +40,7 @@ func TestLintSchemaErrorsAndWarnings(t *testing.T) {
 		"guppy.toml":     "id = \"Bad_ID\"\nversion = \"nope\"\nkind = \"website\"\nlanguage = \"cobol\"\n\n[defaults]\nwidgets = true\n",
 		"template/x.txt": "x",
 	})
-	code, stdout, stderr := run([]string{"lint", dir}, nil)
+	code, stdout, stderr := run([]string{"dev", "lint", dir}, nil)
 	if code != ExitFailure {
 		t.Fatalf("exit = %d, want %d (stderr: %s)", code, ExitFailure, stderr)
 	}
@@ -67,7 +67,7 @@ func TestLintExtendsCycleIsError(t *testing.T) {
 		"template/x": "x",
 	})
 
-	code, stdout, stderr := run([]string{"lint", dir}, nil)
+	code, stdout, stderr := run([]string{"dev", "lint", dir}, nil)
 	if code != ExitFailure {
 		t.Fatalf("exit = %d, want %d (stderr: %s)", code, ExitFailure, stderr)
 	}
@@ -81,7 +81,7 @@ func TestLintExtendsCycleIsError(t *testing.T) {
 
 func TestTestCatchesCorruptedBuiltInCopy(t *testing.T) {
 	dir := copyBuiltin(t, "go-cli")
-	code, _, stderr := run([]string{"test", dir}, nil)
+	code, _, stderr := run([]string{"dev", "test", dir}, nil)
 	if code != ExitOK {
 		t.Fatalf("clean copy must pass, exit = %d (stderr: %s)", code, stderr)
 	}
@@ -90,7 +90,7 @@ func TestTestCatchesCorruptedBuiltInCopy(t *testing.T) {
 		[]byte("module {{ .module_path }}\n\ngo 1.21\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	code, stdout, _ := run([]string{"test", dir}, nil)
+	code, stdout, _ := run([]string{"dev", "test", dir}, nil)
 	if code != ExitFailure {
 		t.Fatalf("exit = %d, want %d (stdout: %s)", code, ExitFailure, stdout)
 	}
@@ -106,14 +106,14 @@ func TestTestUpdateThenPass(t *testing.T) {
 		[]byte("module {{ .module_path }}\n\ngo 1.99\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if code, _, stderr := run([]string{"test", dir}, nil); code != ExitFailure {
+	if code, _, stderr := run([]string{"dev", "test", dir}, nil); code != ExitFailure {
 		t.Fatalf("pre-update mismatch expected, got exit=%d stderr=%s", code, stderr)
 	}
-	code, _, stderr := run([]string{"test", "-u", dir}, nil)
+	code, _, stderr := run([]string{"dev", "test", "-u", dir}, nil)
 	if code != ExitOK {
 		t.Fatalf("update exit = %d (stderr: %s)", code, stderr)
 	}
-	if code, _, stderr := run([]string{"test", dir}, nil); code != ExitOK {
+	if code, _, stderr := run([]string{"dev", "test", dir}, nil); code != ExitOK {
 		t.Fatalf("post-update exit = %d (stderr: %s)", code, stderr)
 	}
 	data, _ := os.ReadFile(filepath.Join(dir, "testdata", "snapshot", "default.toml"))

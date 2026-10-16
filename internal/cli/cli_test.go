@@ -272,13 +272,22 @@ func TestTTYProbeSeam(t *testing.T) {
 	probe := func(answer bool) *prompter {
 		p := newPrompter(devnull, io.Discard)
 		p.ttyProbe = func() bool { return answer }
+		p.setEnabled(true)
 		return p
 	}
 	if !probe(true).interactive() {
-		t.Error("char device + willing probe must be interactive")
+		t.Error("char device + willing probe + --interactive must be interactive")
 	}
 	if probe(false).interactive() {
 		t.Error("char device + refusing probe must be non-interactive")
+	}
+
+	// Prompts are opt-in: without the --interactive gate, even a willing
+	// probe and a char-device stdin refuse (the sharpened uv rule).
+	unenabled := probe(true)
+	unenabled.enabled = false
+	if unenabled.interactive() {
+		t.Error("without --interactive, prompting must be refused")
 	}
 
 	nonTTY := newPrompter(strings.NewReader("x"), io.Discard)

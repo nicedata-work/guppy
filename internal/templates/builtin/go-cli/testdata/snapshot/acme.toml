@@ -1,4 +1,9 @@
 [[file]]
+  path = ".bazelrc"
+  mode = "0644"
+  content = "# acme-widget — Bazel configuration.\n#\n# Convenience symlinks (out, bin, testlogs, <workspace>) are nested under\n# .bazel/ so the project root stays clean — a trailing slash on the prefix\n# puts them inside that directory.\nbuild --symlink_prefix=.bazel/\n"
+
+[[file]]
   path = ".bazelversion"
   mode = "0644"
   content = "9.3.0\n\n"
@@ -11,7 +16,7 @@
 [[file]]
   path = ".gitignore"
   mode = "0644"
-  content = "# acme-widget — ignore rules scaffolded by guppy (base-toolchain).\n# Contextual ignores: only what this project's toggles enable.\n.direnv/\n/bazel-out\n/bazel-bin\n/bazel-testlogs\n/bazel-workspace\n.DS_Store\n*.swp\n\n"
+  content = "# acme-widget — ignore rules scaffolded by guppy (base-toolchain).\n# Contextual ignores: only what this project's toggles enable.\n.direnv/\n/.bazel/\n.DS_Store\n*.swp\n\n"
 
 [[file]]
   path = ".nvmrc"

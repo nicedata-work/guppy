@@ -1,4 +1,4 @@
-// `guppy list` — the global project index .
+// `guppy project list` — the global project index (design §9).
 //
 // Reads index.toml with prune-on-read: the shellhook's seen-log is
 // folded in first (each logged path's marker read for template id and
@@ -23,10 +23,10 @@ func newListCmd(rt *runtime, out *output) *cobra.Command {
 		Long: `List the guppy-managed projects known on this machine.
 
 The list comes from the global index (index.toml), which is maintained
-by the shellhook ("guppy init-shell") and pruned on every read: entries
+by the shellhook ("guppy shell-env") and pruned on every read: entries
 whose project directory or .guppy/project.toml no longer exists are
 removed automatically. Projects scaffolded or audited by guppy are
-recorded even without the hook.`,
+recorded even without the hook; "guppy project clear" forgets them all.`,
 		Args: cobra.NoArgs,
 		RunE: func(_ *cobra.Command, _ []string) error {
 			return runListProjects(rt, out)

@@ -1,4 +1,4 @@
-// Shellhook emission (design §9): `guppy init-shell` prints the hook
+// Shellhook emission (design §9): `guppy shell-env` prints the hook
 // snippet for eval in a zsh/bash rc file, or installs it into the rc file
 // as a marked block (--install) so `guppy uninstall` can remove it.
 //
@@ -20,7 +20,7 @@ import (
 	"github.com/nicedata-work/guppy/internal/project"
 )
 
-// Hook marker lines delimit the block init-shell installs into rc files.
+// Hook marker lines delimit the block shell-env installs into rc files.
 // `guppy uninstall` removes whole marked blocks, never guesses.
 const (
 	HookMarkerOpen  = "# >>> guppy shellhook >>>"
@@ -43,7 +43,7 @@ type Hook struct {
 // the snippet.
 func (h Hook) Script() string {
 	return fmt.Sprintf(`# >>> guppy shellhook >>>
-# Emitted by "guppy init-shell". Stub on the hot path: one
+# Emitted by "guppy shell-env". Stub on the hot path: one
 # directory comparison per prompt, one append when entering a managed
 # project — no guppy invocation, no path resolution. A broken hook
 # degrades to a stale index, never to a broken shell.

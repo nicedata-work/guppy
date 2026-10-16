@@ -136,7 +136,7 @@ func (o Options) Audit(ctx context.Context) (Report, error) {
 	}
 
 	if o.HookInstalled != nil && !o.HookInstalled() {
-		rep.Notes = append(rep.Notes, "shellhook not installed in your rc file — run \"guppy init-shell --install\" so `guppy list` can track this project ")
+		rep.Notes = append(rep.Notes, "shellhook not installed in your rc file — run \"guppy shell-env --install\" so `guppy project list` can track this project ")
 	}
 	return rep, nil
 }

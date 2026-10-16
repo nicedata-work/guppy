@@ -40,13 +40,14 @@ type app struct {
 // globals are the uniform global flags — identical on every subcommand
 // (design §6, uv rule). Every one has a GUPPY_* env equivalent.
 type globals struct {
-	Quiet      bool
-	Verbose    int
-	Color      string
-	NoProgress bool
-	Offline    bool
-	Directory  string
-	Config     string
+	Quiet       bool
+	Verbose     int
+	Color       string
+	NoProgress  bool
+	Offline     bool
+	Directory   string
+	Config      string
+	Interactive bool
 }
 
 // globalFlagKind discriminates how a global flag is registered (the
@@ -99,6 +100,8 @@ var globalFlagSpecs = []globalFlagSpec{
 		target: func(g *globals) any { return &g.Directory }},
 	{name: "config", usage: "path to guppy.toml settings file", kind: flagString,
 		target: func(g *globals) any { return &g.Config }},
+	{name: "interactive", usage: "enable interactive prompts", kind: flagBool,
+		target: func(g *globals) any { return &g.Interactive }},
 }
 
 // globalFlagByName looks up a spec by long name (ok=false when unknown).
@@ -186,9 +189,10 @@ language- and target-agnostic. Templates are declarative (guppy.toml +
 payload); scaffolds produce hermetic dev environments: Bazel toolchains +
 direnv, never polluting global state.
 
-Run "guppy <verb>" for global management (templates, configuration,
-doctor) or "guppy project <verb>" (shimmed as "gp") inside a
-guppy-managed project.`,
+"guppy project" (shimmed as "gp") creates and manages projects and
+dispatches project verbs inside a guppy-managed project; "guppy
+template" manages installed templates; "guppy dev" is the template
+authoring loop; "guppy config" views and sets global configuration.`,
 		Version:       version.Version,
 		SilenceErrors: true,
 		SilenceUsage:  true,
@@ -207,16 +211,15 @@ guppy-managed project.`,
 		return cmd.Help()
 	}
 
-	root.AddCommand(newUpdateCmd(a.rt, a.out))
+	root.AddCommand(newUpdateCmd(a.rt, a.out, a.prompt))
 	root.AddCommand(newUninstallCmd(a.rt, a.out, a.prompt))
 	root.AddCommand(newNewCmd(a.rt, a.out, a.prompt))
 	root.AddCommand(newProjectCmd(a.rt, a.out, a.prompt))
-	root.AddCommand(newLintCmd(a.rt, a.out))
-	root.AddCommand(newTestCmd(a.rt, a.out))
+	root.AddCommand(newDevCmd(a.rt, a.out, a.prompt))
 	root.AddCommand(newTemplateCmd(a.rt, a.out, a.prompt))
-	root.AddCommand(newListCmd(a.rt, a.out))
+	root.AddCommand(newConfigCmd(a.rt, a.out))
 	root.AddCommand(newDoctorCmd(a.rt, a.out))
-	root.AddCommand(newInitShellCmd(a.rt, a.out))
+	root.AddCommand(newShellEnvCmd(a.rt, a.out))
 	root.AddCommand(newDocsCmd(a.out))
 	a.installHelp(root)
 	return root
@@ -234,6 +237,9 @@ func (a *app) setup(cmd *cobra.Command) error {
 	if err := a.validateGlobals(); err != nil {
 		return InputError(err)
 	}
+	// Prompts are opt-in (the uv rule sharpened): without --interactive
+	// the prompter refuses, so every command must have a flag/env path.
+	a.prompt.setEnabled(a.globals.Interactive)
 	if a.globals.Directory != "" {
 		if err := os.Chdir(a.globals.Directory); err != nil {
 			return InputError(fmt.Errorf("--directory: %w", err))

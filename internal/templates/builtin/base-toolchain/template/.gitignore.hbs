@@ -1,10 +1,7 @@
 # {{ .name }} — ignore rules scaffolded by guppy (base-toolchain).
 {{ if .git }}# Contextual ignores: only what this project's toggles enable.
 {{ end }}{{ if .direnv }}.direnv/
-{{ end }}{{ if .bazel }}/bazel-out
-/bazel-bin
-/bazel-testlogs
-/bazel-workspace
+{{ end }}{{ if .bazel }}/.bazel/
 {{ end }}{{ if .git }}.DS_Store
 *.swp
 {{ end }}

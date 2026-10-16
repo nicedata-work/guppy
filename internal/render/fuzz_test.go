@@ -60,10 +60,23 @@ func FuzzExpr(f *testing.F) {
 	f.Add("{{ .name | kebab }}-suffix", "My Project", "example.com/x")
 	f.Add("{{ if .bazel }}on{{ end }}", "My Project", "example.com/x")
 	f.Add("{{", "My Project", "example.com/x")
+	// Regression: fuzzed *values* may themselves contain "{{" — verbatim
+	// substitution puts them in the output, which is not an unexpanded
+	// template substitution. The invariant only holds for template-clean
+	// values, so seed the boundary case here.
+	f.Add("{{ .name }}", "{{", "example.com/x")
 	f.Fuzz(func(t *testing.T, src, name, module string) {
 		vars := map[string]string{"name": name, "module_path": module}
 		out, err := Expr(src, vars)
 		if err != nil {
+			return
+		}
+		if strings.Contains(name, "{{") || strings.Contains(module, "{{") {
+			// A value carrying "{{" is copied into the output verbatim;
+			// that is substitution working as designed, not a leftover
+			// from the template. The no-unexpanded-substitution invariant
+			// is untestable for such values (Expr itself already ran —
+			// the never-panics invariant still held).
 			return
 		}
 		if strings.Contains(out, "{{") {

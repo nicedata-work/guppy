@@ -2,12 +2,12 @@
 //
 //	remove <id> | community:<id>     uninstall and drop the record
 //	clone <id> [--into DIR]          copy a template out for editing
-//	update [<id>|community:<id>|--all]
-//	                                 reconcile installs with their sources:
+//	update [<id>|community:<id>]     reconcile installs with their sources:
 //	                                 registry → newest index version, git →
 //	                                 latest commit of the same ref (the ref
 //	                                 never moves — §4.3). Community updates
 //	                                 pass the review + diff gate (§7).
+//	refresh                          drop the registry download cache
 package cli
 
 import (
@@ -129,7 +129,7 @@ func runClone(ctx context.Context, rt *runtime, out *output, spec, into string) 
 	}
 	abs, _ := filepath.Abs(into)
 	out.infof("cloned %s → %s", lt.t.Identity.String(), abs)
-	out.infof("edit it there, then: guppy lint %s && guppy test %s", into, into)
+	out.infof("edit it there, then: guppy dev lint %s && guppy dev test %s", into, into)
 	return nil
 }
 
@@ -137,15 +137,19 @@ func newTemplateUpdateCmd(rt *runtime, out *output, p *prompter) *cobra.Command 
 	var all, yes bool
 	cmd := &cobra.Command{
 		Use:   "update [<id>|community:<id>]",
-		Short: "Reconcile installed templates with their sources",
-		Long: `Reconcile installed templates with their sources: registry templates
-move to the newest indexed version, git templates re-resolve their ref
-to the newest commit (the ref itself never moves). Local-source
-templates are loaded in place and have nothing to update.
+		Short: "Reconcile installed templates with their sources (all, by default)",
+		Long: `Reconcile installed templates with their sources — all of them by
+default, or one template when an id is given: registry templates move
+to the newest indexed version, git templates re-resolve their ref to
+the newest commit (the ref itself never moves). Local-source templates
+are loaded in place and have nothing to update.
 
 Community-scope updates show the diff against the installed version and
 require review + confirm (--yes in CI); first-party updates apply
-directly.`,
+directly.
+
+Related: "guppy update ." moves a project to its template's latest;
+"guppy template refresh" drops the download cache instead.`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var id string
@@ -164,6 +168,54 @@ directly.`,
 	cmd.Flags().BoolVar(&all, "all", false, "update every installed template")
 	cmd.Flags().BoolVar(&yes, "yes", false, "skip the interactive review confirmation (CI)")
 	return cmd
+}
+
+// newTemplateRefreshCmd drops the registry download cache (extracted
+// tarballs and git-registry checkouts). The next install re-downloads —
+// the escape hatch for a corrupt cache or a stale git checkout.
+func newTemplateRefreshCmd(rt *runtime, out *output) *cobra.Command {
+	return &cobra.Command{
+		Use:   "refresh",
+		Short: "Refresh the registry cache (drop cached downloads)",
+		Long: `Drop the registry cache: cached tarball extractions and git-registry
+checkouts under the guppy cache directory are removed, so the next
+install re-downloads from the registry.
+
+The installed templates themselves are untouched — refresh only clears
+the download cache. Offline-safe by definition: nothing is fetched.
+Reconciliation is a different verb: "guppy template update".`,
+		Args: cobra.NoArgs,
+		Example: `  guppy template refresh
+  guppy template update   # re-fetch with the cache cold`,
+		RunE: func(_ *cobra.Command, _ []string) error {
+			return runRefresh(rt, out)
+		},
+	}
+}
+
+func runRefresh(rt *runtime, out *output) error {
+	cleared := 0
+	for _, dir := range []string{
+		filepath.Join(rt.layout.CacheDir(), "registry"),
+		filepath.Join(rt.layout.CacheDir(), "registry-git"),
+	} {
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			continue // nothing cached under this root
+		}
+		for _, e := range entries {
+			if err := os.RemoveAll(filepath.Join(dir, e.Name())); err != nil {
+				return Fail(err)
+			}
+			cleared++
+		}
+	}
+	if cleared == 0 {
+		out.infof("registry cache is empty")
+		return nil
+	}
+	out.statusf(green, "OK", "cleared %d cached download(s); next install re-downloads", cleared)
+	return nil
 }
 
 func runUpdate(ctx context.Context, rt *runtime, out *output, pr *prompter, id string, all, yes bool) error {

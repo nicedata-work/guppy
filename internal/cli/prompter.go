@@ -26,6 +26,12 @@ type prompter struct {
 	stderr io.Writer
 
 	ttyProbe func() bool
+
+	// enabled is the --interactive gate (GUPPY_INTERACTIVE): prompts are
+	// opt-in. When false, every prompt/confirm refuses with the flag to
+	// pass instead — commands must have a non-interactive path (flag,
+	// env, or settings default), never a hidden prompt.
+	enabled bool
 }
 
 // newPrompter wraps stdin in the invocation's single buffered reader
@@ -46,11 +52,19 @@ func devTTYProbe() bool {
 	return true
 }
 
-// interactive reports whether stdin is a real terminal. Test harnesses
-// pass non-file readers, which counts as non-interactive — exactly like
-// CI. A char device alone is not enough (/dev/null is one), so a
+// setEnabled applies the --interactive gate (called from app.setup once
+// global flags and their env bindings are resolved).
+func (p *prompter) setEnabled(enabled bool) { p.enabled = enabled }
+
+// interactive reports whether prompting may happen: --interactive must
+// be on (opt-in) AND stdin a real terminal. Test harnesses pass
+// non-file readers, which counts as non-interactive — exactly like CI.
+// A char device alone is not enough (/dev/null is one), so a
 // controlling terminal must be present too.
 func (p *prompter) interactive() bool {
+	if !p.enabled {
+		return false
+	}
 	f, ok := p.stdin.(*os.File)
 	if !ok {
 		return false
@@ -66,7 +80,7 @@ func (p *prompter) interactive() bool {
 // answer falls back to def; a still-empty answer is an error (required).
 func (p *prompter) prompt(question, def string) (string, error) {
 	if !p.interactive() {
-		return "", fmt.Errorf("non-interactive context: pass --var to set values")
+		return "", fmt.Errorf("non-interactive context: pass --interactive to prompt, or set the value explicitly (--var / GUPPY_VARS)")
 	}
 	if def != "" {
 		_, _ = fmt.Fprintf(p.stderr, "%s [%s]: ", question, def)
@@ -87,11 +101,12 @@ func (p *prompter) prompt(question, def string) (string, error) {
 	return answer, nil
 }
 
-// confirm asks a yes/no question on stdin. Non-interactive contexts (no
-// TTY) must pass --yes explicitly — uv-style CI behavior.
+// confirm asks a yes/no question on stdin. Prompting is opt-in
+// (--interactive); non-interactive contexts must pass --yes explicitly —
+// uv-style CI behavior.
 func (p *prompter) confirm(question string) (bool, error) {
 	if !p.interactive() {
-		return false, fmt.Errorf("non-interactive context: pass --yes to confirm")
+		return false, fmt.Errorf("non-interactive context: pass --yes to confirm, or --interactive to be asked")
 	}
 	_, _ = fmt.Fprintf(p.stderr, "%s [y/N] ", question)
 	line, err := p.readLine()

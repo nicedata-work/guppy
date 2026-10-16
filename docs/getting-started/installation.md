@@ -27,7 +27,7 @@ curl -LsSf https://github.com/nicedata-work/guppy/releases/latest/download/insta
 
 The installer:
 
-- detects OS/arch (linux/darwin/windows × x86_64/aarch64), downloads the
+- detects OS/arch (linux/windows × x86_64/aarch64, macOS arm64), downloads the
   checksummed release tarball, verifies it, and unpacks the single static
   binary;
 - installs to `~/.local/bin/guppy` (the same on Linux, macOS, and
@@ -37,14 +37,14 @@ The installer:
   `--no-modify-path` / `GUPPY_NO_MODIFY_PATH` is set;
 - never runs as root and works unattended (non-TTY → no prompts), so it is
   safe in CI;
-- prints next steps (`guppy init-shell`, `guppy new`) on success.
+- prints next steps (`guppy shell-env`, `guppy new`) on success.
 
 ## After installing
 
 Two setup steps make guppy ambient:
 
 ```sh
-guppy init-shell    # one-line eval in your rc file: keeps the project index fresh
+guppy shell-env    # one-line eval in your rc file: keeps the project index fresh
 guppy new           # scaffold a project — see First steps
 ```
 
@@ -55,13 +55,15 @@ Updates and removal are CLI verbs, not re-runs of the installer:
 ```sh
 guppy update                 # in-place binary replace, checksum-verified,
                              # previous binary restored on failure
-guppy template update --all  # update installed templates (separate concern)
+guppy update --all           # the binary and all installed templates
+guppy template update        # update installed templates (separate concern)
+guppy update .               # move the current project to its template's
+                             # latest version
 guppy uninstall [--purge]    # remove the binary, rc-file hook lines, and data
 ```
 
-`guppy update` manages the executable only; installed templates are
-reconciled separately with `guppy template update`, so "update" never means
-two things.
+`guppy update` alone manages the executable only; templates and projects
+are the `--all` / `.` forms, so plain "update" never means two things.
 
 ## Package managers
 

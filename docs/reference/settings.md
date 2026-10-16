@@ -26,7 +26,7 @@ git = "git@ssh.dev.azure.com:v3/acme/pipeline-templates"
 # url = "https://registry.internal.acme/guppy"
 
 [shell]                    # shellhook
-hook = true                # emit cd/prompt hook (guppy init-shell installs it)
+hook = true                # emit cd/prompt hook (guppy shell-env installs it)
 
 [network]
 offline  = false
@@ -41,7 +41,7 @@ insecure = []              # allowed-insecure-host list
 | `[template]` | `dirs` | `[]` | extra user-scope template directories |
 | `[template]` | `registry` | `https://raw.githubusercontent.com/nicedata-work/guppy-registry/main` | default registry index URL |
 | `[template]` | `registries` | `[]` | named team registries: `name`, `git` (+ optional `ref`) or `url`, `trust` (`review` default, `full` skips the review gate); searched in declaration order before `registry` |
-| `[shell]` | `hook` | `true` | whether `guppy init-shell` installs the cd/prompt hook |
+| `[shell]` | `hook` | `true` | whether `guppy shell-env` installs the cd/prompt hook |
 | `[network]` | `offline` | `false` | default for `--offline` |
 | `[network]` | `insecure` | `[]` | hosts allowed to use insecure transport |
 

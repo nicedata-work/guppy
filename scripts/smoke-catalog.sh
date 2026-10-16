@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Catalog smoke test, run in a bare container:
 #
-#   - shellhook emission: `guppy init-shell` installs a stub hook that
+#   - shellhook emission: `guppy shell-env` installs a stub hook that
 #     records project sightings without invoking guppy;
-#   - `guppy list` folds the hook's seen-log, prunes deleted projects
+#   - `guppy project list` folds the hook's seen-log, prunes deleted projects
 #     (create 3, delete 1 → list shows 2);
 #   - `guppy doctor` flags a hand-corrupted project and `--fix` repairs
 #     the safe subset (missing files only — user edits survive);
@@ -15,7 +15,7 @@ set -euo pipefail
 
 IMAGE="${1:-debian:bookworm-slim}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-GUPPY_BIN="${GUPPY_BIN:-$ROOT/bazel-bin/cmd/guppy/guppy_/guppy}"
+GUPPY_BIN="${GUPPY_BIN:-$ROOT/.bazel/bin/cmd/guppy/guppy_/guppy}"
 ENGINE="${CONTAINER_ENGINE:-}"
 if [[ -z "$ENGINE" ]]; then
   ENGINE="$(command -v podman || command -v docker || true)"
@@ -50,20 +50,20 @@ for name in alpha beta gamma; do
   guppy new "$name" --template go-cli --var "name=$name" --no-git
 done
 
-echo "== guppy list shows all 3 (scaffold-time recording, no hook yet) =="
+echo "== guppy project list shows all 3 (scaffold-time recording, no hook yet) =="
 # Capture listings before grepping: piping straight into `grep -q`
 # closes the pipe early (SIGPIPE under pipefail) and masks the exit.
-listing="$(guppy list)"
+listing="$(guppy project list)"
 echo "$listing" | grep -q alpha
 echo "$listing" | grep -q beta
 echo "$listing" | grep -q gamma
 
 echo "== install the shellhook (marked rc block) =="
 touch "$HOME/.bashrc"
-guppy init-shell bash --install
+guppy shell-env bash --install
 grep -q ">>> guppy shellhook >>>" "$HOME/.bashrc"
 # Idempotent: a second install does not duplicate the block.
-guppy init-shell bash --install
+guppy shell-env bash --install
 test "$(grep -c ">>> guppy shellhook >>>" "$HOME/.bashrc")" -eq 1
 
 echo "== the hook is a stub: no guppy invocation, one test + one append =="
@@ -80,14 +80,14 @@ bash -c "
 SEEN="$HOME/.local/share/guppy/catalog/seen.log"
 test -s "$SEEN"
 
-echo "== guppy list folds the hook log (manual project appears) =="
-listing="$(guppy list)"
+echo "== guppy project list folds the hook log (manual project appears) =="
+listing="$(guppy project list)"
 echo "$listing" | grep -q manual
 test ! -s "$SEEN"   # log cleared after the fold
 
 echo "== delete 1 of 4 → prune-on-read drops it =="
 rm -rf /app/beta
-listing="$(guppy list)"
+listing="$(guppy project list)"
 echo "$listing" | grep -q alpha
 ! echo "$listing" | grep -q beta
 echo "$listing" | grep -q gamma
@@ -135,7 +135,7 @@ echo "$batch" | grep -q "\[OK \]"        # the others are clean
 guppy doctor --all --fix >/dev/null 2>&1 || true
 
 echo "== offline: catalog + doctor are local-scope only =="
-GUPPY_OFFLINE=true guppy list >/dev/null
+GUPPY_OFFLINE=true guppy project list >/dev/null
 set +e
 GUPPY_OFFLINE=true guppy doctor >/dev/null 2>&1
 code=$?

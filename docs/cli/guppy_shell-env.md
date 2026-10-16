@@ -1,4 +1,4 @@
-# guppy init-shell
+# guppy shell-env
 
 ## Synopsis
 
@@ -6,26 +6,27 @@ Emit the shellhook that keeps the global project index fresh.
 
 Without --install the hook is printed for eval in your rc file:
 
-    eval "$(guppy init-shell zsh)"
+    eval "$(guppy shell-env zsh)"
 
 With --install it is written into the rc file as a marked block
 (idempotent; `guppy uninstall` removes it). The hook itself is a
 stub: one directory comparison per prompt and one append when you enter
 a guppy-managed project — it never invokes guppy, so it cannot slow
 down or break your shell. Guppy folds its observations into
-index.toml whenever a command reads the index (guppy list, doctor).
+index.toml whenever a command reads the index (guppy project list,
+doctor).
 
 ## Usage
 
 ```
-guppy init-shell [zsh|bash] [flags]
+guppy shell-env [zsh|bash] [flags]
 ```
 
 ## Examples
 
 ```
-eval "$(guppy init-shell zsh)"
-  guppy init-shell bash --install
+eval "$(guppy shell-env zsh)"
+  guppy shell-env bash --install
 ```
 
 ## Flags
@@ -42,6 +43,7 @@ eval "$(guppy init-shell zsh)"
 | --color (default auto) | color output: auto, always, never |
 | --config | path to guppy.toml settings file |
 | --directory | run as if started in this directory |
+| --interactive | enable interactive prompts |
 | --no-progress | disable progress output |
 | --offline | disable all network access |
 | -q, --quiet | only print errors |

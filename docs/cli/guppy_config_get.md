@@ -1,19 +1,13 @@
-# guppy lint
+# guppy config get
 
 ## Synopsis
 
-Lint a template without rendering it: guppy.toml schema,
-extends resolution (unresolvable parents and cycles are errors), and every
-{{ }} substitution in the payload (undeclared vars and toggles are errors,
-never silently empty output).
-
-PATH is a template directory (default "."), TEMPLATE a resolvable template
-id such as a built-in. Exit code 1 if any error-level issue is found.
+Print one config value (resolved)
 
 ## Usage
 
 ```
-guppy lint [PATH|TEMPLATE]
+guppy config get <key>
 ```
 
 ## Global flags
@@ -23,6 +17,7 @@ guppy lint [PATH|TEMPLATE]
 | --color (default auto) | color output: auto, always, never |
 | --config | path to guppy.toml settings file |
 | --directory | run as if started in this directory |
+| --interactive | enable interactive prompts |
 | --no-progress | disable progress output |
 | --offline | disable all network access |
 | -q, --quiet | only print errors |

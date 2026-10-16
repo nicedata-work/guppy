@@ -1,7 +1,7 @@
 # Doctor and the catalog
 
 Every project guppy manages is traceable, and traceability is what powers
-`guppy doctor`, `guppy list`, and cheap template upgrades. Two artifacts do
+`guppy doctor`, `guppy project list`, and cheap template upgrades. Two artifacts do
 the work: a per-project marker and a global index.
 
 ## The project marker
@@ -21,7 +21,7 @@ secrets) so provenance survives clones.
 ## The global index
 
 **`~/.local/share/guppy/index.toml`** indexes every managed project on the
-machine. It is maintained by a **shellhook** (`guppy init-shell`), not a
+machine. It is maintained by a **shellhook** (`guppy shell-env`), not a
 daemon or filesystem watcher:
 
 - on `cd`/prompt, the hook checks the current directory (one
@@ -29,7 +29,7 @@ daemon or filesystem watcher:
   seen-log — only when the directory changed;
 - the hook is pure shell and **never invokes guppy**: failure degrades to a
   stale index, never to a broken shell;
-- index readers (`guppy list`, `guppy doctor`, `guppy new`) fold the log
+- index readers (`guppy project list`, `guppy doctor`, `guppy new`) fold the log
   into `index.toml` off the hot path and clear it after a successful fold —
   a failed fold is retried, never lost;
 - readers prune entries whose path or marker no longer exists, so the index

@@ -1,7 +1,9 @@
-// `guppy new` — uv-init-style scaffolding (design §6): composable axes
-// over built-in templates, every default with a --no-* inverse, existing
-// directories refused unless --force (merge, never clobber — §2.1), and
-// vars resolved from [vars] prompts/defaults.
+// `guppy new` (== `guppy project new`) — uv-init-style scaffolding
+// (design §6): composable axes over built-in templates, every default
+// with a --no-* inverse, existing directories refused unless --force
+// (merge, never clobber — §2.1), and vars resolved from [vars]
+// prompts/defaults. The same command is registered at the root and
+// under `guppy project`.
 package cli
 
 import (
@@ -42,7 +44,7 @@ func newNewCmd(rt *runtime, out *output, p *prompter) *cobra.Command {
 	)
 	cmd := &cobra.Command{
 		Use:   "new [PATH]",
-		Short: "Scaffold a new project from a template",
+		Short: "Scaffold a new project from a template (== guppy project new)",
 		Long: `Scaffold a new project from a template.
 
 Without --template, the template is picked from the kind × language axes

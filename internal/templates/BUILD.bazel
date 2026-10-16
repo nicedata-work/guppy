@@ -80,6 +80,7 @@ go_library(
         "builtin/template-registry/template/templates/README.md",
         "builtin/template-registry/testdata/snapshot/default.toml",
         "builtin/template-registry/tests.toml",
+        "builtin/base-toolchain/template/.bazelrc.hbs",
     ],
     importpath = "github.com/nicedata-work/guppy/internal/templates",
     visibility = ["//visibility:public"],

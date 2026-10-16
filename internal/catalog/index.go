@@ -90,7 +90,7 @@ func (f *FileIndex) Save(entries []Entry) error {
 	slices.SortFunc(sorted, func(a, b Entry) int { return strings.Compare(a.Path, b.Path) })
 
 	var b strings.Builder
-	b.WriteString("# guppy project index — maintained by the shellhook (guppy init-shell)\n")
+	b.WriteString("# guppy project index — maintained by the shellhook (guppy shell-env)\n")
 	b.WriteString("# and pruned on read by `guppy list`/`guppy doctor`. The marker file is\n")
 	b.WriteString("# the truth; this index is only a cache of where markers were seen.\n")
 	if err := toml.NewEncoder(&b).Encode(indexFile{Schema: SchemaVersion, Projects: sorted}); err != nil {

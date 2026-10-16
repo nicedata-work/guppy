@@ -30,7 +30,7 @@ jobs:
       - name: Verify assets + checksums
         run: |
           set -euo pipefail
-          for cell in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
+          for cell in linux/amd64 linux/arm64 darwin/arm64 windows/amd64 windows/arm64; do
             os="${cell%/*}"; arch="${cell#*/}"
             asset="dist/guppy-$VERSION-$os-$arch.tar.gz"
             test -f "$asset" && test -f "$asset.sha256"

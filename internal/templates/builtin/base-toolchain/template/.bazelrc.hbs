@@ -1,0 +1,7 @@
+{{ if .bazel }}# {{ .name }} — Bazel configuration.
+#
+# Convenience symlinks (out, bin, testlogs, <workspace>) are nested under
+# .bazel/ so the project root stays clean — a trailing slash on the prefix
+# puts them inside that directory.
+build --symlink_prefix=.bazel/
+{{ end }}

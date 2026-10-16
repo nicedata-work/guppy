@@ -1,8 +1,8 @@
 // `guppy template` — template management verbs (design §6): show the
-// merged view of a template (§5 — inheritance is never invisible), the
-// registry-backed distribution verbs (list/search/add/remove/
-// clone/update with the §7 community trust gate), and the authoring
-// loop's lint/test live at the top level (`guppy lint`, `guppy test`).
+// merged view of a template (§5 — inheritance is never invisible), and
+// the registry-backed distribution verbs (list/search/add/remove/
+// clone/update/refresh with the §7 community trust gate). The authoring
+// loop lives under `guppy dev` (lint/test/publish).
 package cli
 
 import (
@@ -22,7 +22,7 @@ func newTemplateCmd(rt *runtime, out *output, p *prompter) *cobra.Command {
 	tmpl := &cobra.Command{
 		Use:   "template",
 		Short: "Inspect and manage templates",
-		Long:  "Inspect and manage templates: show merged views, list/search the catalog, install (add), uninstall (remove), copy out for editing (clone), and reconcile installs with their sources (update).",
+		Long:  "Inspect and manage templates: show merged views, list/search the catalog, install (add), uninstall (remove), copy out for editing (clone), reconcile installs with their sources (update), and drop the download cache (refresh).",
 	}
 	tmpl.AddCommand(newTemplateShowCmd(rt, out))
 	tmpl.AddCommand(newTemplateListCmd(rt, out))
@@ -31,6 +31,7 @@ func newTemplateCmd(rt *runtime, out *output, p *prompter) *cobra.Command {
 	tmpl.AddCommand(newTemplateRemoveCmd(rt, out))
 	tmpl.AddCommand(newTemplateCloneCmd(rt, out))
 	tmpl.AddCommand(newTemplateUpdateCmd(rt, out, p))
+	tmpl.AddCommand(newTemplateRefreshCmd(rt, out))
 	return tmpl
 }
 
