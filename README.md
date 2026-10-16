@@ -41,6 +41,54 @@ A CLI for generating new projects based on templates with great defaults.
 - Manages dependencies and using bazel + direnv + git to drive development environment (think nix-shell experience when cd'ing into the project directory)
 - Written in Golang
 
+## Building and testing
+
+Everything goes through Bazel (hermetic, pinned via `.bazelversion`); no
+system Go is needed to build or test — rules_go fetches the Go SDK itself.
+
+```sh
+bazel build //...              # build every target; binary at
+                               #   .bazel/bin/cmd/guppy/guppy_/guppy
+bazel test  //...              # run all tests
+bazel test  //internal/cli:cli_test   # run one package's tests
+```
+
+Inside the repo no install step is needed: `.envrc` prepends the build
+output dir (`.bazel/bin/cmd/guppy/guppy_`) to PATH ahead of everything
+else, so `guppy` and `gp` resolve to the binary `bazel build //...` just
+produced (and fall back to the installed guppy when there is no build).
+
+To use the fresh build from shells *outside* the project, copy it to the
+installer's location (same directory, `install -D` creates it if
+missing):
+
+```sh
+install -Dm755 .bazel/bin/cmd/guppy/guppy_/guppy ~/.local/bin/guppy
+```
+
+After adding or moving Go packages, regenerate the BUILD files and keep
+them committed (CI fails when they are stale):
+
+```sh
+bazel run //:gazelle                        # rewrite BUILD files
+bazel run //:gazelle -- -mode=diff          # what CI checks (must be empty)
+```
+
+Formatting, linting, and docs also need a local Go toolchain (`go` on
+PATH — used only by these checks, never by the build):
+
+```sh
+gofmt -s -l .                    # must print nothing
+go vet ./...                     # plus golangci-lint (CI: lint job)
+go fix -diff ./...               # modernizer suggestions are failures
+./scripts/gen-docs.sh            # regenerate docs/cli/ (CI: --check)
+./scripts/fuzz.sh                # time-boxed fuzz smoke over all targets
+```
+
+With direnv hooked up (`direnv allow`), the same commands are available
+contextually as project verbs — `gp build`, `gp test`, `gp lint` (from
+this repo's own `.guppy/project.toml`).
+
 ## Documentation
 
 User-facing docs follow `uv`'s structure:

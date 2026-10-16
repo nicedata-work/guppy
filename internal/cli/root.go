@@ -182,17 +182,8 @@ func Execute(args []string, env EnvFunc, stdin io.Reader, stdout, stderr io.Writ
 
 func newRootCmd(a *app) *cobra.Command {
 	root := &cobra.Command{
-		Use:   "guppy",
-		Short: "Scaffold new projects from templates with great defaults",
-		Long: `guppy scaffolds new projects from templates with great defaults —
-language- and target-agnostic. Templates are declarative (guppy.toml +
-payload); scaffolds produce hermetic dev environments: Bazel toolchains +
-direnv, never polluting global state.
-
-"guppy project" (shimmed as "gp") creates and manages projects and
-dispatches project verbs inside a guppy-managed project; "guppy
-template" manages installed templates; "guppy dev" is the template
-authoring loop; "guppy config" views and sets global configuration.`,
+		Use:           "guppy",
+		Short:         "guppy - coding project template manager",
 		Version:       version.Version,
 		SilenceErrors: true,
 		SilenceUsage:  true,

@@ -2,15 +2,7 @@
 
 ## Synopsis
 
-guppy scaffolds new projects from templates with great defaults —
-language- and target-agnostic. Templates are declarative (guppy.toml +
-payload); scaffolds produce hermetic dev environments: Bazel toolchains +
-direnv, never polluting global state.
-
-"guppy project" (shimmed as "gp") creates and manages projects and
-dispatches project verbs inside a guppy-managed project; "guppy
-template" manages installed templates; "guppy dev" is the template
-authoring loop; "guppy config" views and sets global configuration.
+guppy - coding project template manager
 
 ## Usage
 
