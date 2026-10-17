@@ -15,6 +15,6 @@ agents_md = true
 
 # The env-contract workflow verbs (§3.5); `lint` is added by language
 # templates that bring an actual linter.
-[gp]
+[gup]
 build = { command = "bazel build //...", requires = ["bazel"] }
 test  = { command = "bazel test //...", requires = ["bazel"] }

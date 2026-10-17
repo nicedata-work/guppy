@@ -10,23 +10,23 @@ Every first-party template ships the baseline set, so a freshly scaffolded
 project has its workflow from minute zero:
 
 ```sh
-gp build      # ≡ guppy project build — run the project's build targets
-gp test       # run the project's tests
-gp lint       # run the project's linters
-gp doctor     # audit this project (guppy doctor, project scope)
+gup build      # ≡ guppy project build — run the project's build targets
+gup test       # run the project's tests
+gup lint       # run the project's linters
+gup doctor     # audit this project (guppy doctor, project scope)
 ```
 
 Verbs execute through the pinned environment (the direnv/Bazel toolchain),
-so `gp test` uses exactly this repo's pinned node/pnpm/bazel — never
+so `gup test` uses exactly this repo's pinned node/pnpm/bazel — never
 whatever happens to be global.
 
 ## Where the verbs come from
 
-The template manifest declares `[gp]` entries; the scaffold resolves them
+The template manifest declares `[gup]` entries; the scaffold resolves them
 into `.guppy/project.toml`:
 
 ```toml
-[gp]
+[gup]
 build = "bazel build //..."
 test  = "bazel test //..."
 lint  = "bazel run //tools/env:lint"   # template-chosen
@@ -39,13 +39,13 @@ axes are off at scaffold time are dropped from the written map. Commands may
 reference `[vars]` (`{{ .module_path }}`) with the same strict allow-list as
 the payload.
 
-Templates can add verbs beyond the baseline four (`gp dev`, `gp deploy`);
+Templates can add verbs beyond the baseline four (`gup dev`, `gup deploy`);
 an unknown verb prints the map.
 
-## `gp` is ambient
+## `gup` is ambient
 
-The direnv setup script links `gp` into `.direnv/bin/` alongside the tool
-shims: `cd` into the project and `gp test` works; `cd` out and `gp` is
+The direnv setup script links `gup` into `.direnv/bin/` alongside the tool
+shims: `cd` into the project and `gup test` works; `cd` out and `gup` is
 gone. If direnv is not hooked up, the canonical form works from anywhere:
 
 ```sh
@@ -57,7 +57,7 @@ flags the missing direnv hook.
 
 ## Auditing the project
 
-`gp doctor` (or `guppy doctor`) is read-only and manifest-driven: it diffs
+`gup doctor` (or `guppy doctor`) is read-only and manifest-driven: it diffs
 the project tree against the template's expected file set — missing,
 renamed, or deleted payload files; stale pins like `.bazelversion` versus
 the template's current default — and emits recommendations.

@@ -58,7 +58,7 @@ func TestValidateMatchesSpecTable(t *testing.T) {
 func TestUnknownDefaultsAxisIsErrorWithCandidates(t *testing.T) {
 	m := Manifest{ID: "x", Version: "1.0.0", Kind: "lib", Language: "none",
 		Defaults: map[Axis]bool{"widgets": true},
-		GP:       map[string]GPCommand{"build": {Command: "make"}, "test": {Command: "make test"}}}
+		GUP:      map[string]GUPCommand{"build": {Command: "make"}, "test": {Command: "make test"}}}
 	issues := Validate(m)
 	if !HasErrors(issues) {
 		t.Fatalf("unknown axis must be an error (T1: closed vocabulary), got %v", issues)

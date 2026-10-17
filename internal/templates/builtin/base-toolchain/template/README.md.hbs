@@ -1,6 +1,6 @@
 # {{ .name }}
 
 Scaffolded by [guppy](https://nicedata.work/guppy) from the `base-toolchain` template.
-{{ if .direnv }}The dev environment is hermetic ({{ if .bazel }}Bazel-pinned, {{ end }}direnv-activated — design §3.4): run `direnv allow .` once, then `gp <verb>` inside this project (the `gp` shim appears in `.direnv/bin/` and disappears when you `cd` out).{{ end }}
+{{ if .direnv }}The dev environment is hermetic ({{ if .bazel }}Bazel-pinned, {{ end }}direnv-activated — design §3.4): run `direnv allow .` once, then `gup <verb>` inside this project (the `gup` shim appears in `.direnv/bin/` and disappears when you `cd` out).{{ end }}
 
-The project workflow lives in `.guppy/project.toml` (`gp build`, `gp test`, …); every verb also works explicitly as `guppy project <verb>`, no direnv required.
+The project workflow lives in `.guppy/project.toml` (`gup build`, `gup test`, …); every verb also works explicitly as `guppy project <verb>`, no direnv required.

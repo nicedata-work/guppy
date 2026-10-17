@@ -13,8 +13,8 @@ linters = true
 tests   = true
 
 # `build`/`test` come from base-toolchain. `dbt` takes the subcommand and
-# flags as pass-through args: `gp dbt build`, `gp dbt test --select …`.
-[gp]
+# flags as pass-through args: `gup dbt build`, `gup dbt test --select …`.
+[gup]
 dbt    = { command = "DBT_DUCKDB_PATH=\"$PWD/data/{{ .name | kebab }}.duckdb\" bazel run //dbt:dbt -- --project-dir \"$PWD/dbt\" --profiles-dir \"$PWD/dbt\"", requires = ["bazel"] }
 lint   = { command = "bazel run //:sqlfluff -- lint \"$PWD/dbt\" && bazel run //:ruff -- check \"$PWD\"", requires = ["bazel", "linters"] }
 format = { command = "bazel run //:ruff -- format \"$PWD\"", requires = ["bazel", "linters"] }

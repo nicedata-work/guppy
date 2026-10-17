@@ -1,8 +1,8 @@
 # Troubleshooting
 
-## `gp: command not found`
+## `gup: command not found`
 
-`gp` is linked into `.direnv/bin/` by the project's direnv setup, so it
+`gup` is linked into `.direnv/bin/` by the project's direnv setup, so it
 exists only while direnv has activated the project. Check, in order:
 
 1. direnv is installed and hooked into your shell (`direnv status`).

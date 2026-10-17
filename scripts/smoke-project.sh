@@ -5,9 +5,9 @@
 #   - `guppy project test` runs the pinned toolchain WITHOUT direnv
 #     (the explicit fallback — bazelisk + .bazelversion give version
 #     hermeticity on their own);
-#   - `gp` outside a project refuses (exit 2) — the shim is project
+#   - `gup` outside a project refuses (exit 2) — the shim is project
 #     context, never ambient workflow;
-#   - `gp doctor` is recognized as built-in and reserved.
+#   - `gup doctor` is recognized as built-in and reserved.
 #
 # Usage: scripts/smoke-project.sh [image]   (default: debian:bookworm-slim)
 set -euo pipefail
@@ -44,9 +44,9 @@ echo "== install runtime deps (direnv deliberately absent) =="
 apt-get -qq update >/dev/null
 apt-get -qq install -y curl ca-certificates gcc >/dev/null
 
-echo "== install guppy and the gp shim name =="
+echo "== install guppy and the gup shim name =="
 install -m 0755 /src/guppy /usr/local/bin/guppy
-ln -s /usr/local/bin/guppy /usr/local/bin/gp
+ln -s /usr/local/bin/guppy /usr/local/bin/gup
 
 echo "== install bazelisk (pinned bazel comes from .bazelversion) =="
 curl -fsSL -o /usr/local/bin/bazel \
@@ -62,23 +62,23 @@ test -f widget/.guppy/project.toml
 grep -q "^schema = 2" widget/.guppy/project.toml
 grep -q "bazel test //" widget/.guppy/project.toml
 
-echo "== gp test without direnv (the fallback is a contract) =="
+echo "== gup test without direnv (the fallback is a contract) =="
 cd widget
 guppy project test
 
-echo "== gp outside a project refuses (exit 2) =="
+echo "== gup outside a project refuses (exit 2) =="
 cd /
 set +e
-gp test
+gup test
 code=$?
 set -e
 test "$code" -eq 2
 
-echo "== gp doctor is built in (inside the project) =="
+echo "== gup doctor is built in (inside the project) =="
 # A clean scaffold audits clean: exit 0, no drift. Capture before grep:
 # piping into `grep -q` closes the pipe early (SIGPIPE under pipefail).
 cd /app/widget
-report="$(gp doctor 2>&1)"
+report="$(gup doctor 2>&1)"
 echo "$report" | grep -q "clean"
 
 # Corrupt the tree: doctor flags the drift (exit 1) and --fix restores
@@ -86,12 +86,12 @@ echo "$report" | grep -q "clean"
 rm README.md
 echo "my precious edit" >> main.go
 set +e
-report="$(gp doctor 2>&1)"
+report="$(gup doctor 2>&1)"
 code=$?
 set -e
 test "$code" -eq 1
 set +e
-fixout="$(gp doctor --fix 2>&1)"
+fixout="$(gup doctor --fix 2>&1)"
 set -e
 echo "$fixout" | grep -q "fixed"
 test -f README.md

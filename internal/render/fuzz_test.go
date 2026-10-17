@@ -51,7 +51,7 @@ func FuzzParseTemplate(f *testing.F) {
 	})
 }
 
-// FuzzExpr targets the exported expression evaluator used by gp-verb
+// FuzzExpr targets the exported expression evaluator used by gup-verb
 // command rendering and doctor. Invariants: never panics; on success the
 // result contains no unexpanded substitution.
 func FuzzExpr(f *testing.F) {

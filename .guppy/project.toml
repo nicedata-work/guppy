@@ -1,7 +1,7 @@
 # guppy project marker — the presence of this file defines a
 # guppy-managed project (design §9). Written by `guppy new`; commit it.
 #
-# Dogfooding: the guppy repo itself defines its own gp verbs, on the
+# Dogfooding: the guppy repo itself defines its own gup verbs, on the
 # same Bazel + direnv contract templates ship.
 schema = 2
 
@@ -25,7 +25,7 @@ agents_md = true
 linters = true
 tests = true
 
-[gp]
+[gup]
 build = "bazel build //..."
 test = "bazel test //..."
 lint = "bazel run //:gazelle -- -mode=diff"

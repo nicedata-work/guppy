@@ -24,8 +24,8 @@ language- and target-agnostic. Written in **Go**, built with **Bazel**.
   snapshot tests) without leaving the CLI.
 * Every managed project is traceable: a committed `.guppy/project.toml`
   marker plus a global index kept fresh by a shellhook.
-* `cd` into a managed project and the project face of the CLI — `gp` — is on
-  PATH contextually: `gp build`, `gp test`, `gp lint`, `gp doctor` from
+* `cd` into a managed project and the project face of the CLI — `gup` — is on
+  PATH contextually: `gup build`, `gup test`, `gup lint`, `gup doctor` from
   minute zero.
 
 ## Installation
@@ -51,16 +51,16 @@ first commit, and whose workflow verbs are already wired:
 ```sh
 $ guppy new data-handbook --kind app --lang ts
 $ cd data-handbook
-$ gp build        # ≡ guppy project build — runs the project's Bazel targets
-$ gp test
-$ gp lint
-$ gp doctor       # audit the project against its template
+$ gup build        # ≡ guppy project build — runs the project's Bazel targets
+$ gup test
+$ gup lint
+$ gup doctor       # audit the project against its template
 ```
 
-`gp` is guppy in **project mode** — one binary, two faces. Invoked as
+`gup` is guppy in **project mode** — one binary, two faces. Invoked as
 `guppy` it is the global management CLI (templates, settings, doctor);
 inside a guppy-managed project it dispatches the project's own verbs. See
-the [project guide](guides/gp-workflows.md).
+the [project guide](guides/gup-workflows.md).
 
 ## Learn more
 

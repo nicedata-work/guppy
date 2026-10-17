@@ -7,27 +7,27 @@ import (
 	"testing"
 )
 
-func TestInvokedAsGP(t *testing.T) {
+func TestInvokedAsGUP(t *testing.T) {
 	tests := []struct {
 		argv0 string
 		want  bool
 	}{
-		{"/usr/local/bin/gp", true},
-		{"gp", true},
-		{`C:\tools\gp.exe`, true},
+		{"/usr/local/bin/gup", true},
+		{"gup", true},
+		{`C:\tools\gup.exe`, true},
 		{"/usr/local/bin/guppy", false},
 		{"guppy", false},
 		{"guppyx", false},
 	}
 	for _, tt := range tests {
-		if got := InvokedAsGP(tt.argv0); got != tt.want {
-			t.Errorf("InvokedAsGP(%q) = %v, want %v", tt.argv0, got, tt.want)
+		if got := InvokedAsGUP(tt.argv0); got != tt.want {
+			t.Errorf("InvokedAsGUP(%q) = %v, want %v", tt.argv0, got, tt.want)
 		}
 	}
 }
 
-func TestArgsForGPShim(t *testing.T) {
-	got := ArgsFor("/x/gp", []string{"test", "--foo"})
+func TestArgsForGUPShim(t *testing.T) {
+	got := ArgsFor("/x/gup", []string{"test", "--foo"})
 	if len(got) != 3 || got[0] != "project" || got[1] != "test" || got[2] != "--foo" {
 		t.Errorf("ArgsFor = %v", got)
 	}
@@ -36,17 +36,17 @@ func TestArgsForGPShim(t *testing.T) {
 	}
 }
 
-// writeProject creates a guppy-managed project dir with the given [gp]
+// writeProject creates a guppy-managed project dir with the given [gup]
 // map body, returning its root.
-func writeProject(t *testing.T, gpBody string) string {
+func writeProject(t *testing.T, gupBody string) string {
 	t.Helper()
 	root := t.TempDir()
 	if err := os.MkdirAll(filepath.Join(root, ".guppy"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	marker := "schema = 1\n\n[guppy]\nversion = \"dev\"\n\n[project]\ntemplate = \"go-cli\"\nversion = \"0.2.0\"\n"
-	if gpBody != "" {
-		marker += "\n[gp]\n" + gpBody
+	if gupBody != "" {
+		marker += "\n[gup]\n" + gupBody
 	}
 	if err := os.WriteFile(filepath.Join(root, ".guppy", "project.toml"), []byte(marker), 0o644); err != nil {
 		t.Fatal(err)
@@ -223,7 +223,7 @@ func TestNewThenProjectMode(t *testing.T) {
 		`base-toolchain@0.2.0`,
 		`name = "widget"`,
 		`[toggles]`,
-		"[gp]",
+		"[gup]",
 		`build = "bazel build //..."`,
 		`test = "bazel test //..."`,
 		`lint = "bazel run //:gazelle -- -mode=diff"`,

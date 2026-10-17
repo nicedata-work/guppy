@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	goruntime "runtime"
+	"slices"
 	"strings"
 	"syscall"
 	"testing"
@@ -201,27 +202,97 @@ func TestDocsGeneratesDeterministicReference(t *testing.T) {
 // holders and defaults dim — and, like everything else, decoration
 // only: stripped help equals plain help byte-for-byte.
 func TestHelpIsColoured(t *testing.T) {
-	code, colored, _ := run([]string{"--color", "always", "template"}, nil)
-	if code != ExitOK {
-		t.Fatalf("exit = %d, want 0", code)
-	}
-	for _, want := range []string{
-		"\x1b[1mUsage:\x1b[0m",
-		"\x1b[36madd",
-		"\x1b[33m      --color string",
-		"\x1b[2m (default \"auto\")\x1b[0m",
+	for _, tc := range []struct {
+		args  []string
+		wants []string
+	}{
+		// template: bold header, a cyan subcommand, a yellow global flag.
+		{[]string{"--color", "always", "template"}, []string{
+			"\x1b[1mUsage:\x1b[0m",
+			"\x1b[36madd",
+			"\x1b[33m      --interactive",
+		}},
+		// dev new: a yellow local flag with a dim default value.
+		{[]string{"--color", "always", "dev", "new", "--help"}, []string{
+			"\x1b[33m      --kind string",
+			"\x1b[2m (default \"cli\")\x1b[0m",
+		}},
 	} {
-		if !strings.Contains(colored, want) {
-			t.Errorf("help missing %q:\n%q", want, colored)
+		code, colored, _ := run(tc.args, nil)
+		if code != ExitOK {
+			t.Fatalf("exit = %d, want 0 (%v)", code, tc.args)
+		}
+		for _, want := range tc.wants {
+			if !strings.Contains(colored, want) {
+				t.Errorf("help missing %q (%v):\n%q", want, tc.args, colored)
+			}
+		}
+
+		plainArgs := slices.Clone(tc.args)
+		plainArgs[1] = "never"
+		code, plain, _ := run(plainArgs, nil)
+		if code != ExitOK {
+			t.Fatalf("plain exit = %d, want 0", code)
+		}
+		if got := stripANSI(colored); got != plain {
+			t.Errorf("stripped coloured help != plain help (%v):\ncolored: %q\nplain:   %q", tc.args, got, plain)
 		}
 	}
+}
 
-	code, plain, _ := run([]string{"--color", "never", "template"}, nil)
+// TestRootHelpLayout pins the curated root help: the two command
+// groups in the designed order (blank line between them), hidden
+// commands absent, and the global flags in table order ending in
+// --help / --version.
+func TestRootHelpLayout(t *testing.T) {
+	code, stdout, _ := run([]string{"--help"}, nil)
 	if code != ExitOK {
-		t.Fatalf("plain exit = %d, want 0", code)
+		t.Fatalf("help exit = %d", code)
 	}
-	if got := stripANSI(colored); got != plain {
-		t.Errorf("stripped coloured help != plain help:\ncolored: %q\nplain:   %q", got, plain)
+
+	const commandsHeader = "Available Commands:\n"
+	start := strings.Index(stdout, commandsHeader)
+	end := strings.Index(stdout, "\nFlags:")
+	if start < 0 || end < start {
+		t.Fatalf("root help is missing its command/flag sections:\n%s", stdout)
+	}
+
+	var gotCommands []string
+	for line := range strings.SplitSeq(strings.TrimSuffix(stdout[start+len(commandsHeader):end], "\n"), "\n") {
+		if strings.TrimSpace(line) == "" {
+			gotCommands = append(gotCommands, "") // group separator
+			continue
+		}
+		gotCommands = append(gotCommands, strings.Fields(line)[0])
+	}
+	wantCommands := []string{"new", "project", "template", "dev", "doctor", "help", "",
+		"config", "update", "completion", "uninstall"}
+	if !slices.Equal(gotCommands, wantCommands) {
+		t.Errorf("Available Commands = %q, want %q", gotCommands, wantCommands)
+	}
+
+	flagsStart := strings.Index(stdout[end+2:], "\n")
+	flagsSection := stdout[end+2+flagsStart+1:]
+	if stop := strings.Index(flagsSection, "\nUse "); stop >= 0 {
+		flagsSection = flagsSection[:stop]
+	}
+	var gotFlags []string
+	for line := range strings.SplitSeq(strings.TrimSpace(flagsSection), "\n") {
+		for f := range strings.FieldsSeq(line) {
+			if strings.HasPrefix(f, "--") {
+				gotFlags = append(gotFlags, f)
+			}
+		}
+	}
+	wantFlags := []string{"--interactive", "--config", "--directory", "--offline", "--quiet", "--verbose", "--help", "--version"}
+	if !slices.Equal(gotFlags, wantFlags) {
+		t.Errorf("Flags = %q, want %q", gotFlags, wantFlags)
+	}
+
+	for _, hidden := range []string{"shell-env", "--color", "--no-progress"} {
+		if strings.Contains(stdout, hidden) {
+			t.Errorf("root help should not list %q:\n%s", hidden, stdout)
+		}
 	}
 }
 

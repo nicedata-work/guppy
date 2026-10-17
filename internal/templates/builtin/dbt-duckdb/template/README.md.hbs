@@ -7,11 +7,11 @@ The dev environment is hermetic({{ if .bazel }}Bazel-pinned, {{ end }}direnv-act
 run `direnv allow .` once, then use the project verbs:
 
 ```sh
-gp dbt build     # dbt build — models → tests (via //dbt:dbt; sets DBT_DUCKDB_PATH)
-gp dbt test      # dbt data/singular tests only; extra dbt args pass through
-gp test          # bazel test //... — hermetic dbt smoke test
-gp lint          # sqlfluff over dbt/ + ruff over Python
-gp format        # ruff format
+gup dbt build     # dbt build — models → tests (via //dbt:dbt; sets DBT_DUCKDB_PATH)
+gup dbt test      # dbt data/singular tests only; extra dbt args pass through
+gup test          # bazel test //... — hermetic dbt smoke test
+gup lint          # sqlfluff over dbt/ + ruff over Python
+gup format        # ruff format
 ```
 
 No direnv? The same verbs work explicitly: `guppy project dbt build`.
@@ -45,5 +45,5 @@ dbt 2.0 is a Rust engine shipped as a Python wheel, fetched per host platform
 at Bazel fetch time. To bump dependencies:
 
 ```sh
-gp lock         # uv pip compile --python-version 3.14 pyproject.toml -o requirements_lock.txt
+gup lock         # uv pip compile --python-version 3.14 pyproject.toml -o requirements_lock.txt
 ```

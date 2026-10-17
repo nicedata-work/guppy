@@ -4,7 +4,7 @@ One directory per template, named after its id. Each contains:
 
 ```text
 templates/<id>/
-├── guppy.toml            # manifest: id, version, kind, language, [vars], [defaults], [gp]
+├── guppy.toml            # manifest: id, version, kind, language, [vars], [defaults], [gup]
 ├── tests.toml            # render-matrix cases for guppy test
 ├── testdata/snapshot/    # golden snapshots (committed — CI runs guppy test)
 └── template/             # the payload; .hbs files are rendered, the rest copied verbatim

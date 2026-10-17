@@ -18,7 +18,7 @@ user; what it means for your templates is summarized at the end.
   the renderer is a pure function with no filesystem access.
 - **The global CLI never reads project state to change its own behavior.**
   Project settings live only in `.guppy/project.toml` and affect the
-  project face (`gp`) — a scaffolded repository cannot change how `guppy`
+  project face (`gup`) — a scaffolded repository cannot change how `guppy`
   itself behaves.
 - **Checksums everywhere.** Release tarballs, registry artifacts, and
   self-updates are checksum-verified; `guppy update` restores the previous

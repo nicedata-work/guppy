@@ -6,7 +6,7 @@
 //	defaults < guppy.toml < env (GUPPY_*) < flags
 //
 // Project settings live only in .guppy/project.toml and affect the project
-// face (gp) — the global CLI never reads project state, keeping the trust
+// face (gup) — the global CLI never reads project state, keeping the trust
 // boundary of §4.1 intact.
 package settings
 

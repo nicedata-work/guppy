@@ -54,7 +54,7 @@ A user-level `[defaults]` setting beats a template's default; a per-invocation
 ## Project settings are separate
 
 Project settings live only in `.guppy/project.toml` and affect the project
-face (`gp`). The global CLI never reads project state to change its own
+face (`gup`). The global CLI never reads project state to change its own
 behavior — that is the trust boundary of
 [Trust and security](../concepts/trust-and-security.md).
 

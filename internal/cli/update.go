@@ -118,8 +118,8 @@ func runProjectUpdate(ctx context.Context, rt *runtime, out *output, target stri
 		return Fail(err)
 	}
 	var verbs project.VerbMap
-	if len(lt.t.Manifest.GP) > 0 {
-		verbs, err = project.ResolveVerbs(lt.t.Manifest.GP, toggles, marker.Vars)
+	if len(lt.t.Manifest.GUP) > 0 {
+		verbs, err = project.ResolveVerbs(lt.t.Manifest.GUP, toggles, marker.Vars)
 		if err != nil {
 			return Fail(err)
 		}

@@ -195,8 +195,8 @@ func runNew(ctx context.Context, rt *runtime, out *output, p *prompter, opts new
 	}
 
 	var verbs project.VerbMap
-	if len(lt.t.Manifest.GP) > 0 {
-		verbs, err = project.ResolveVerbs(lt.t.Manifest.GP, toggles, resolved)
+	if len(lt.t.Manifest.GUP) > 0 {
+		verbs, err = project.ResolveVerbs(lt.t.Manifest.GUP, toggles, resolved)
 		if err != nil {
 			return Fail(err)
 		}
@@ -238,7 +238,7 @@ func runNew(ctx context.Context, rt *runtime, out *output, p *prompter, opts new
 		out.infof("project verbs: %s", strings.Join(project.SortedVerbNames(verbs), ", "))
 	}
 	if toggles[manifest.AxisDirenv] {
-		out.infof("activate the pinned environment: cd %s && direnv allow . && gp test", abs)
+		out.infof("activate the pinned environment: cd %s && direnv allow . && gup test", abs)
 	}
 
 	if toggles[manifest.AxisGit] {

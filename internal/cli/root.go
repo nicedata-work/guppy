@@ -65,12 +65,16 @@ const (
 // has a closed vocabulary) its validator. The table is the single
 // definition (styleguide D4/U4): flags, env names, misplaced-flag
 // warnings, and validation all derive from it — nothing can drift.
+//
+// A hidden spec stays fully functional (flag, GUPPY_* env, validation)
+// but is omitted from every help and docs listing.
 type globalFlagSpec struct {
 	name      string
 	shorthand string
 	usage     string
 	kind      globalFlagKind
 	def       string
+	hidden    bool
 
 	target func(*globals) any
 
@@ -84,24 +88,39 @@ func (s globalFlagSpec) envVar() string {
 }
 
 // globalFlagSpecs is THE table of uniform global flags (design §6).
+// Registration order is help-page order (pflag sorting is off), and
+// help appends --help / --version after these: interactive, config,
+// directory, offline, quiet, verbose, help, version. The two hidden
+// specs at the end are supported but unlisted.
 var globalFlagSpecs = []globalFlagSpec{
+	{name: "interactive", usage: "enable interactive prompts", kind: flagBool,
+		target: func(g *globals) any { return &g.Interactive }},
+	{name: "config", usage: "path to guppy.toml settings file", kind: flagString,
+		target: func(g *globals) any { return &g.Config }},
+	{name: "directory", usage: "run as if started in this directory", kind: flagString,
+		target: func(g *globals) any { return &g.Directory }},
+	{name: "offline", usage: "disable all network access", kind: flagBool,
+		target: func(g *globals) any { return &g.Offline }},
 	{name: "quiet", shorthand: "q", usage: "only print errors", kind: flagBool,
 		target: func(g *globals) any { return &g.Quiet }},
 	{name: "verbose", shorthand: "v", usage: "increase output verbosity", kind: flagCount,
 		target: func(g *globals) any { return &g.Verbose }},
 	{name: "color", usage: "color output: auto, always, never", kind: flagString, def: "auto",
+		hidden:   true,
 		target:   func(g *globals) any { return &g.Color },
 		validate: validateColor},
 	{name: "no-progress", usage: "disable progress output", kind: flagBool,
+		hidden: true,
 		target: func(g *globals) any { return &g.NoProgress }},
-	{name: "offline", usage: "disable all network access", kind: flagBool,
-		target: func(g *globals) any { return &g.Offline }},
-	{name: "directory", usage: "run as if started in this directory", kind: flagString,
-		target: func(g *globals) any { return &g.Directory }},
-	{name: "config", usage: "path to guppy.toml settings file", kind: flagString,
-		target: func(g *globals) any { return &g.Config }},
-	{name: "interactive", usage: "enable interactive prompts", kind: flagBool,
-		target: func(g *globals) any { return &g.Interactive }},
+}
+
+// rootHelpGroups is the curated root help layout: one group of
+// subcommands per inner slice, printed in the listed order with a
+// blank line between groups. A name that is absent from the tree or
+// hidden is skipped, so the table can never render a phantom row.
+var rootHelpGroups = [][]string{
+	{"new", "project", "template", "dev", "doctor", "help"},
+	{"config", "update", "completion", "uninstall"},
 }
 
 // globalFlagByName looks up a spec by long name (ok=false when unknown).
@@ -114,8 +133,12 @@ func globalFlagByName(name string) (globalFlagSpec, bool) {
 	return globalFlagSpec{}, false
 }
 
-// registerGlobalFlags registers every uniform global flag from the table.
+// registerGlobalFlags registers every uniform global flag from the
+// table. Registration order is preserved (pflag's lexical sorting is
+// off) so the help page lists them in table order; hidden specs are
+// marked hidden and disappear from every listing.
 func (a *app) registerGlobalFlags(pf *pflag.FlagSet) {
+	pf.SortFlags = false
 	for _, s := range globalFlagSpecs {
 		p := s.target(&a.globals)
 		switch s.kind {
@@ -125,6 +148,9 @@ func (a *app) registerGlobalFlags(pf *pflag.FlagSet) {
 			pf.CountVarP(p.(*int), s.name, s.shorthand, s.usage)
 		case flagString:
 			pf.StringVarP(p.(*string), s.name, s.shorthand, s.def, s.usage)
+		}
+		if s.hidden {
+			_ = pf.MarkHidden(s.name)
 		}
 	}
 }
@@ -182,17 +208,8 @@ func Execute(args []string, env EnvFunc, stdin io.Reader, stdout, stderr io.Writ
 
 func newRootCmd(a *app) *cobra.Command {
 	root := &cobra.Command{
-		Use:   "guppy",
-		Short: "Scaffold new projects from templates with great defaults",
-		Long: `guppy scaffolds new projects from templates with great defaults —
-language- and target-agnostic. Templates are declarative (guppy.toml +
-payload); scaffolds produce hermetic dev environments: Bazel toolchains +
-direnv, never polluting global state.
-
-"guppy project" (shimmed as "gp") creates and manages projects and
-dispatches project verbs inside a guppy-managed project; "guppy
-template" manages installed templates; "guppy dev" is the template
-authoring loop; "guppy config" views and sets global configuration.`,
+		Use:           "guppy",
+		Short:         "guppy - coding project template manager",
 		Version:       version.Version,
 		SilenceErrors: true,
 		SilenceUsage:  true,

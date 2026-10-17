@@ -21,7 +21,7 @@ go_test(
     name = "manifest_test",
     srcs = [
         "fuzz_test.go",
-        "gp_test.go",
+        "gup_test.go",
         "manifest_test.go",
     ],
     embed = [":manifest"],

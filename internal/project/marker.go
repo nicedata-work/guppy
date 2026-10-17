@@ -1,8 +1,8 @@
 // The per-project marker file, `.guppy/project.toml` (design §9): written
 // at scaffold time, committed to the repo, and *being there* is the whole
 // definition of a guppy-managed project. It records provenance (template
-// identity, resolved chain, var values) and the resolved [gp] command map
-// (§3.5) — what `guppy project <verb>` / `gp` dispatch through.
+// identity, resolved chain, var values) and the resolved [gup] command map
+// (§3.5) — what `guppy project <verb>` / `gup` dispatch through.
 //
 // Encoding is deterministic (sorted verbs, no timestamps) so idempotent
 // re-scaffolds keep the marker byte-identical instead of reporting it as
@@ -38,7 +38,7 @@ type Marker struct {
 	Project ProjectInfo            `toml:"project"`
 	Vars    map[string]string      `toml:"vars"`
 	Toggles map[manifest.Axis]bool `toml:"toggles"`
-	GP      VerbMap                `toml:"gp"`
+	GUP     VerbMap                `toml:"gup"`
 }
 
 // GuppyInfo records which guppy wrote the marker (provenance, §9).
@@ -77,7 +77,7 @@ func Encode(in MarkerInput) ([]byte, error) {
 		},
 		Vars:    in.Vars,
 		Toggles: in.Toggles,
-		GP:      in.Verbs,
+		GUP:     in.Verbs,
 	}
 	data, err := toml.Marshal(m)
 	if err != nil {
@@ -105,15 +105,15 @@ func Decode(data []byte) (Marker, error) {
 	return m, nil
 }
 
-// ResolveVerbs resolves a template's [gp] map into the project's verb map:
+// ResolveVerbs resolves a template's [gup] map into the project's verb map:
 // commands are rendered as variable expressions against the resolved vars
 // (strict — undeclared vars are errors, never empty strings), and verbs
 // whose required axes are off are dropped (`--no-bazel` means no
 // `bazel build` verb). The result is sorted for deterministic markers.
-func ResolveVerbs(gp map[string]manifest.GPCommand, toggles render.Toggles, vars render.Vars) (VerbMap, error) {
+func ResolveVerbs(gup map[string]manifest.GUPCommand, toggles render.Toggles, vars render.Vars) (VerbMap, error) {
 	out := VerbMap{}
-	for _, verb := range sortedKeys(gp) {
-		entry := gp[verb]
+	for _, verb := range sortedKeys(gup) {
+		entry := gup[verb]
 		skip := false
 		for _, axis := range entry.Requires {
 			if !toggles[axis] {
@@ -127,7 +127,7 @@ func ResolveVerbs(gp map[string]manifest.GPCommand, toggles render.Toggles, vars
 		cmd, err := render.Expr(entry.Command, vars)
 		if err != nil {
 
-			return nil, fmt.Errorf("[gp] verb %q: %w — command expressions may only use vars declared in [vars]", verb, err)
+			return nil, fmt.Errorf("[gup] verb %q: %w — command expressions may only use vars declared in [vars]", verb, err)
 		}
 		out[verb] = Command(cmd)
 	}
@@ -145,7 +145,7 @@ func File(in MarkerInput) (render.File, error) {
 }
 
 // ErrOutsideProject marks "no marker found above me" — the refusal of
-// `gp`/`guppy project` outside a managed project (§3.5).
+// `gup`/`guppy project` outside a managed project (§3.5).
 var ErrOutsideProject = fmt.Errorf("not inside a guppy-managed project")
 
 // FindUp walks up from start to the filesystem root looking for the
@@ -208,7 +208,7 @@ func SortedVerbNames(v VerbMap) []string {
 }
 
 // FormatMap renders the verb map for human-readable output (unknown-verb
-// errors, `gp` help): aligned verb names and commands.
+// errors, `gup` help): aligned verb names and commands.
 func FormatMap(v VerbMap) string {
 	var b strings.Builder
 	names := SortedVerbNames(v)

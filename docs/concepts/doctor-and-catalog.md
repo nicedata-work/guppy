@@ -11,7 +11,7 @@ the work: a per-project marker and a global index.
 - the template identity and version, and the resolved `extends` chain;
 - the var values and resolved `[defaults]` toggles (what doctor re-renders
   the expected file set from);
-- the `[gp]` command map;
+- the `[gup]` command map;
 - the guppy version and a `schema` version for forward compatibility.
 
 The file is deterministic — no timestamps, sorted keys — so idempotent

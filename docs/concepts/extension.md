@@ -36,4 +36,4 @@ A plugin runtime or executable hook would reintroduce exactly the complexity
 the model exists to avoid: non-reviewable scaffolds, non-verifiable
 substitutions, and arbitrary code execution at scaffold time. If a template
 needs behavior, it ships it as a Bazel target the consuming project invokes
-through its `[gp]` command map — visible, pinned, and sandboxed.
+through its `[gup]` command map — visible, pinned, and sandboxed.

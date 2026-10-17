@@ -90,7 +90,7 @@ func runDoctor(ctx context.Context, rt *runtime, out *output, fix bool) error {
 }
 
 // runDoctorAt audits one project (shared by `guppy doctor` and the
-// built-in `gp doctor` verb — §3.5: one audit, two faces).
+// built-in `gup doctor` verb — §3.5: one audit, two faces).
 func runDoctorAt(ctx context.Context, rt *runtime, out *output, root string, m project.Marker, fix bool) error {
 	started := out.clock()
 	rt.recordProject(root)
